@@ -104,39 +104,59 @@ input[type=number]::-webkit-inner-spin-button{display:none}
 
 /* ── Sticky Header ── */
 #header{
-  background:linear-gradient(180deg,#111114f0 0%,#0d0d0f88 100%);
+  background:linear-gradient(180deg,#111114f5 0%,#0d0d0fcc 100%);
   border-bottom:1px solid var(--border2);
-  border-top:1px solid #ffffff08;
-  padding:14px 18px 0;
   position:sticky;
   top:0;
   z-index:100;
-  backdrop-filter:blur(20px) saturate(150%);
-  -webkit-backdrop-filter:blur(20px) saturate(150%);
-  box-shadow:0 1px 0 #ffffff05, 0 8px 32px #00000060;
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  box-shadow:0 1px 0 #ffffff05, 0 12px 40px #00000070;
 }
 
-/* Header glow line at top */
+/* Glow line at very top of header */
 #header::before{
-  content:'';
-  position:absolute;
-  top:0;left:10%;right:10%;
-  height:1px;
-  background:linear-gradient(90deg, transparent, var(--kirs)66, var(--kyle)55, transparent);
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg, transparent 5%, var(--kirs)55 35%, var(--kyle)44 65%, transparent 95%);
 }
 
-#header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-
-.header-left{display:flex;flex-direction:column;gap:3px}
+/* ── Top banner row ── */
+#header-banner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px 12px;
+  border-bottom:1px solid var(--border);
+}
+.header-banner-left{display:flex;flex-direction:column;gap:3px}
 .header-eyebrow{
-  font-size:8px;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--kyle);font-weight:700;opacity:.7;
+  font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--kyle);font-weight:700;opacity:.8;
 }
-.header-names{display:flex;align-items:center;gap:8px}
+.header-banner-right{
+  text-align:right;flex-shrink:0;padding-left:12px;
+}
+
+/* ── Identity + month row ── */
+#header-identity{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px 0;
+  gap:10px;
+}
+.header-names{display:flex;align-items:center;gap:8px;flex:1}
+
+/* ── Month bar in header (now its own row) ── */
+#month-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;
+}
+
+#header-top{display:none}  /* legacy — replaced by banner + identity rows */
+.header-left{display:flex;flex-direction:column;gap:3px}
+.header-right{text-align:right}
 .avatar{
-  width:32px;height:32px;border-radius:50%;
+  width:34px;height:34px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:900;flex-shrink:0;
+  font-size:13px;font-weight:900;flex-shrink:0;
   position:relative;
 }
 .avatar::after{
@@ -667,7 +687,7 @@ input[type=number]::-webkit-inner-spin-button{display:none}
   #header {
     position: relative;
     top: auto;
-    padding: 24px 20px 0;
+    padding: 0;
     border-bottom: 1px solid var(--border);
     border-right: none;
     background: transparent;
@@ -678,40 +698,34 @@ input[type=number]::-webkit-inner-spin-button{display:none}
   }
   #header::before { display: none; }
 
-  #header-top {
+  /* Desktop: collapse banner into sidebar-style header */
+  #header-banner {
+    padding: 22px 20px 14px;
+    border-bottom: 1px solid var(--border);
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 16px;
+    gap: 6px;
   }
-
-  .header-left { width: 100%; }
-
-  .header-eyebrow {
-    font-size: 9px;
-    letter-spacing: .2em;
-    margin-bottom: 6px;
-    opacity: 1;
-  }
-
-  .header-names { gap: 10px; }
-
-  .avatar { width: 36px; height: 36px; font-size: 14px; }
-
-  .header-title { font-size: 16px; }
-  .header-title-input { font-size: 16px; width: 170px; max-width: 180px; }
-
-  .header-right {
-    width: 100%;
+  .header-banner-title { font-size: 16px; }
+  .header-banner-right {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    text-align: left;
-    padding: 10px 0;
+    width: 100%;
+    padding-top: 10px;
     border-top: 1px solid var(--border);
     margin-top: 4px;
+    text-align: left;
+    padding-left: 0;
   }
-  #header-total-value { font-size: 28px; }
+  #header-total-value { font-size: 26px; }
+
+  #header-identity { padding: 12px 20px 0; }
+  .header-names { gap: 10px; }
+  .avatar { width: 34px; height: 34px; font-size: 13px; }
+  .header-title { font-size: 15px; }
+  .header-title-input { font-size: 15px; width: 150px; max-width: 160px; }
 
   /* ── Month bar in sidebar ── */
   #month-bar {
@@ -862,47 +876,58 @@ input[type=number]::-webkit-inner-spin-button{display:none}
   <!-- ── Sidebar (desktop) / Sticky header (mobile) ── -->
   <div id="sidebar">
     <div id="header">
-      <div id="header-top">
-        <div class="header-left">
+
+      <!-- Row 1: Title banner -->
+      <div id="header-banner">
+        <div class="header-banner-left">
           <div class="header-eyebrow">Family Command Center</div>
-          <div class="header-names">
-            <div class="avatar avatar-kyle" id="avatar-kyle" title="Tap to rename" style="cursor:pointer"></div>
-            <span class="avatar-amp">&amp;</span>
-            <div class="avatar avatar-kirs" id="avatar-kirs" title="Tap to rename" style="cursor:pointer"></div>
-            <span class="header-title" id="household-name-display" title="Tap to rename" style="cursor:pointer"></span>
-          </div>
-          <input id="household-name-input" class="header-title-input" type="text" maxlength="32" placeholder="Family name…" style="display:none"/>
-          <!-- Person name edit popup -->
-          <div id="person-edit-popup" style="display:none;position:absolute;top:52px;left:16px;z-index:200;
-            background:#16161a;border:1px solid var(--border2);border-radius:14px;padding:14px 16px;
-            box-shadow:0 8px 32px #00000080,0 0 0 1px #ffffff08;min-width:220px">
-            <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:10px" id="person-edit-label">Edit Name</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <div id="person-edit-avatar" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0"></div>
-              <input id="person-edit-input" type="text" maxlength="20" placeholder="Name…"
-                style="flex:1;background:#0b0b0e;border:1px solid var(--border2);border-radius:9px;
-                padding:9px 12px;color:var(--text);font-size:15px;font-weight:700;font-family:'Inter',sans-serif;"/>
-              <button id="person-edit-save" style="background:var(--kyle);border:none;border-radius:9px;padding:9px 14px;color:#fff;font-weight:800;font-size:13px;cursor:pointer">✓</button>
-            </div>
-            <div style="font-size:10px;color:var(--muted);margin-top:8px">Updates all names throughout the app</div>
-          </div>
         </div>
-        <div class="header-right">
+        <div class="header-banner-right">
           <div class="header-total-label">Monthly Total</div>
           <div id="header-total-value">—</div>
         </div>
       </div>
+
+      <!-- Row 2: Avatars + household name -->
+      <div id="header-identity">
+        <div class="header-names">
+          <div class="avatar avatar-kyle" id="avatar-kyle" title="Tap to rename" style="cursor:pointer"></div>
+          <span class="avatar-amp">&amp;</span>
+          <div class="avatar avatar-kirs" id="avatar-kirs" title="Tap to rename" style="cursor:pointer"></div>
+          <span class="header-title" id="household-name-display" title="Tap to edit household name" style="cursor:pointer"></span>
+          <input id="household-name-input" class="header-title-input" type="text" maxlength="32" placeholder="Family name…" style="display:none"/>
+        </div>
+        <!-- Person name edit popup -->
+        <div id="person-edit-popup" style="display:none;position:absolute;top:110px;left:16px;z-index:200;
+          background:#16161a;border:1px solid var(--border2);border-radius:14px;padding:14px 16px;
+          box-shadow:0 8px 32px #00000080,0 0 0 1px #ffffff08;min-width:220px">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:10px" id="person-edit-label">Edit Name</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div id="person-edit-avatar" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0"></div>
+            <input id="person-edit-input" type="text" maxlength="20" placeholder="Name…"
+              style="flex:1;background:#0b0b0e;border:1px solid var(--border2);border-radius:9px;
+              padding:9px 12px;color:var(--text);font-size:15px;font-weight:700;font-family:'Inter',sans-serif;"/>
+            <button id="person-edit-save" style="background:var(--kyle);border:none;border-radius:9px;padding:9px 14px;color:#fff;font-weight:800;font-size:13px;cursor:pointer">✓</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:8px">Updates all names throughout the app</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Month navigator -->
       <div id="month-bar">
         <button class="month-nav" id="prev-month">‹</button>
         <span id="month-label">—</span>
         <button class="month-nav" id="next-month">›</button>
         <button class="month-reset" id="go-today">Today</button>
       </div>
+
+      <!-- Row 4: Tabs -->
       <div id="tabs">
         <button class="tab active" data-tab="family">🏠 Family Split</button>
         <button class="tab" data-tab="personal">👤 Personal</button>
         <button class="tab" data-tab="insights">📊 Budget</button>
       </div>
+
     </div>
 
     <!-- Sidebar footer (desktop only) -->
