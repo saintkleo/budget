@@ -979,18 +979,6 @@ function renderFamily(s) {
 
   html += `<div class="breakdown-card"><div class="breakdown-hd">How It's Calculated</div>${bd}</div>`;
 
-  // Water input
-  const waterBill = state.bills.find(b=>b.name==='Water');
-  const waterAmt  = parseFloat(waterBill?.amount)||0;
-  html += `<div class="water-card">
-    <div class="water-title">💧 Water Bill (Quarterly)</div>
-    <div class="water-sub">Enter the quarterly total — averaged monthly.</div>
-    <div class="water-row">
-      <input class="inp" id="water-input" type="number" inputmode="decimal" placeholder="e.g. 90" value="${waterAmt||''}" style="width:110px;font-family:monospace;color:#4ade80"/>
-      <span class="water-avg" id="water-avg">= ${fmt(waterAmt/3)}/mo</span>
-    </div>
-  </div>`;
-
   return html;
 }
 
@@ -1389,19 +1377,6 @@ function attachEvents() {
       saveState(); render();
     });
   });
-
-  // Water input
-  const wi = document.getElementById('water-input');
-  if (wi) {
-    wi.addEventListener('input', () => {
-      const val=parseFloat(wi.value)||0;
-      state.bills = state.bills.map(b=>b.name==='Water'?{...b,amount:val}:b);
-      const avg = document.getElementById('water-avg');
-      if (avg) avg.textContent = `= ${fmt(val/3)}/mo`;
-      document.getElementById('header-total-value').textContent = fmt(calcSettlement().grandTotal);
-      saveState();
-    });
-  }
 
   // Income inputs — save silently on each keystroke, re-render only on blur
   ['kyle','kirsten'].forEach(who => {
