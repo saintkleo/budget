@@ -285,6 +285,7 @@ let state = {
   editingPersonalCard: null,
   showAddPersonalCard: false,
   insightsView: 'combined',
+  pieMode: 'spend',
   viewYear: new Date().getFullYear(),
   viewMonth: new Date().getMonth(),
   bills: DEFAULT_BILLS,
@@ -374,6 +375,7 @@ function loadState() {
     if (p.nextBillId)  state.nextBillId  = p.nextBillId;
     if (p.monthData)   state.monthData   = p.monthData;
     if (p.insightsView) state.insightsView = p.insightsView;
+    if (p.pieMode)      state.pieMode      = p.pieMode;
   } catch(e) {}
 }
 
@@ -384,6 +386,7 @@ function saveState() {
       nextBillId:  state.nextBillId,
       monthData:   state.monthData,
       insightsView: state.insightsView,
+      pieMode:      state.pieMode,
     }));
     showToast();
   } catch(e) {}
@@ -469,7 +472,12 @@ function calcSettlement() {
 
 // ─── Pie chart ────────────────────────────────────────────────────────────────
 function renderPie(s) {
-  // Build category totals (bills + credit cards as their own category)
+  const mode    = state.pieMode || 'spend';
+  const curKey  = monthKey();
+  const income  = getIncome(curKey);
+  const totalIncome = income.kyle + income.kirsten;
+
+  // Build category spend totals
   const catTotals = {};
   s.processed.forEach(b => {
     const c = b.category||'other';
@@ -477,17 +485,28 @@ function renderPie(s) {
   });
   if (s.cardsTotalMonthly > 0) catTotals['credit'] = (catTotals['credit']||0) + s.cardsTotalMonthly;
 
-  const entries = Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  const total = entries.reduce((s,[,v])=>s+v,0);
-  if (!total) return '';
+  const spendEntries = Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const totalSpend   = spendEntries.reduce((s,[,v])=>s+v,0);
 
-  // SVG donut
+  if (!totalSpend) return `<div class="chart-wrap">
+    <div class="chart-title">Spending Breakdown</div>
+    <div style="text-align:center;padding:24px 0;color:var(--muted);font-size:13px">No spending data yet</div>
+  </div>`;
+
+  // In income mode, we show spend slices against income as the full circle
+  // Unspent income = income - spend (shown as a grey remainder slice)
+  const useIncome = mode === 'income' && totalIncome > 0;
+  const denominator = useIncome ? Math.max(totalIncome, totalSpend) : totalSpend;
+  const unspent = useIncome ? Math.max(0, totalIncome - totalSpend) : 0;
+
+  // Build SVG donut
   const R=70, r=42, cx=80, cy=80;
   let startAngle = -Math.PI/2;
   let slices = '';
 
-  entries.forEach(([cat, val]) => {
-    const angle = (val/total) * Math.PI * 2;
+  // Spend slices
+  spendEntries.forEach(([cat, val]) => {
+    const angle = (val / denominator) * Math.PI * 2;
     const endAngle = startAngle + angle;
     const x1=cx+R*Math.cos(startAngle), y1=cy+R*Math.sin(startAngle);
     const x2=cx+R*Math.cos(endAngle),   y2=cy+R*Math.sin(endAngle);
@@ -495,28 +514,102 @@ function renderPie(s) {
     const ix2=cx+r*Math.cos(endAngle),  iy2=cy+r*Math.sin(endAngle);
     const large = angle > Math.PI ? 1 : 0;
     const color = CAT_COLORS[cat]||'#64748b';
-    slices += `<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${r},${r} 0 ${large},0 ${ix1},${iy1} Z"
+    slices += `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${r},${r} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z"
       fill="${color}" opacity="0.92" stroke="var(--card)" stroke-width="2"/>`;
     startAngle = endAngle;
   });
 
-  const legend = entries.map(([cat,val]) =>
-    `<div class="legend-item">
+  // Unspent remainder slice (income mode only)
+  if (useIncome && unspent > 0) {
+    const angle = (unspent / denominator) * Math.PI * 2;
+    const endAngle = startAngle + angle;
+    const x1=cx+R*Math.cos(startAngle), y1=cy+R*Math.sin(startAngle);
+    const x2=cx+R*Math.cos(endAngle),   y2=cy+R*Math.sin(endAngle);
+    const ix1=cx+r*Math.cos(startAngle),iy1=cy+r*Math.sin(startAngle);
+    const ix2=cx+r*Math.cos(endAngle),  iy2=cy+r*Math.sin(endAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    slices += `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${r},${r} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z"
+      fill="#1e293b" opacity="1" stroke="var(--card)" stroke-width="2"/>`;
+  }
+
+  // Center label
+  const centerTop    = useIncome ? 'of income' : 'Spending';
+  const centerVal    = useIncome
+    ? Math.round(totalSpend / totalIncome * 100) + '%'
+    : fmt(totalSpend).replace('.00','');
+  const centerColor  = useIncome
+    ? (totalSpend / totalIncome > 0.85 ? '#f87171' : totalSpend / totalIncome > 0.65 ? '#f59e0b' : GREEN)
+    : 'var(--text)';
+
+  // Legend
+  const legend = spendEntries.map(([cat,val]) => {
+    const pct = useIncome && totalIncome > 0
+      ? Math.round(val / totalIncome * 100)
+      : Math.round(val / totalSpend * 100);
+    return `<div class="legend-item">
       <div class="legend-dot" style="background:${CAT_COLORS[cat]||'#64748b'}"></div>
       <span class="legend-name">${cat}</span>
-      <span class="legend-pct">${Math.round(val/total*100)}%</span>
-    </div>`).join('');
+      <span class="legend-pct" style="color:${CAT_COLORS[cat]||'#64748b'}">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  // Unspent row in income mode
+  const unspentRow = useIncome && unspent > 0
+    ? `<div class="legend-item">
+        <div class="legend-dot" style="background:#1e293b;border:1px solid var(--border2)"></div>
+        <span class="legend-name" style="color:${GREEN}">unspent</span>
+        <span class="legend-pct" style="color:${GREEN}">${Math.round(unspent/totalIncome*100)}%</span>
+      </div>`
+    : useIncome && unspent <= 0
+    ? `<div style="font-size:10px;color:#f87171;font-weight:700;margin-top:4px">⚠️ Spending exceeds income</div>`
+    : '';
+
+  // No-income warning for income mode
+  const noIncomeWarning = mode === 'income' && totalIncome === 0
+    ? `<div style="text-align:center;padding:8px 0 4px;font-size:11px;color:#f59e0b">Enter income in the Budget tab to see ratios</div>`
+    : '';
+
+  // Toggle
+  const toggle = `<div class="view-toggle" style="margin-bottom:14px">
+    <button class="view-toggle-btn${mode==='spend'?' active':''}" data-action="pie-mode" data-mode="spend">By Spending</button>
+    <button class="view-toggle-btn${mode==='income'?' active':''}" data-action="pie-mode" data-mode="income">vs Income</button>
+  </div>`;
+
+  // Summary row beneath toggle in income mode
+  const summaryRow = useIncome
+    ? `<div style="display:flex;justify-content:space-between;align-items:center;
+        background:var(--bg);border-radius:10px;padding:10px 14px;margin-bottom:14px;
+        border:1px solid var(--border2)">
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:3px">Income</div>
+          <div style="font-size:15px;font-weight:800;font-family:monospace;color:${GREEN}">${fmt(totalIncome)}</div>
+        </div>
+        <div style="font-size:18px;color:var(--muted)">–</div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:3px">Spending</div>
+          <div style="font-size:15px;font-weight:800;font-family:monospace;color:${KYLE}">${fmt(totalSpend)}</div>
+        </div>
+        <div style="font-size:18px;color:var(--muted)">=</div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:3px">${unspent>=0?'Surplus':'Deficit'}</div>
+          <div style="font-size:15px;font-weight:800;font-family:monospace;color:${unspent>=0?GREEN:'#f87171'}">${unspent>=0?'+':''}${fmt(unspent)}</div>
+        </div>
+      </div>`
+    : '';
 
   return `<div class="chart-wrap">
     <div class="chart-title">Spending Breakdown</div>
+    ${toggle}
+    ${summaryRow}
+    ${noIncomeWarning}
     <div class="chart-inner">
       <svg id="pie-svg" width="160" height="160" viewBox="0 0 160 160">
         ${slices}
         <circle cx="${cx}" cy="${cy}" r="${r-2}" fill="var(--card)"/>
-        <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="-apple-system,sans-serif">Total</text>
-        <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="800" font-family="monospace">${fmt(total).replace('.00','')}</text>
+        <text x="${cx}" y="${cy-8}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="-apple-system,sans-serif">${centerTop}</text>
+        <text x="${cx}" y="${cx+10}" text-anchor="middle" font-size="${useIncome?16:12}" fill="${centerColor}" font-weight="800" font-family="monospace">${centerVal}</text>
       </svg>
-      <div class="chart-legend">${legend}</div>
+      <div class="chart-legend">${legend}${unspentRow}</div>
     </div>
   </div>`;
 }
@@ -1377,6 +1470,11 @@ function attachEvents() {
         md.personalCards = md.personalCards || [];
         md.personalCards.push({id: md.nextPersonalId++, name, owner, amount, note});
         state.showAddPersonalCard=false; saveState(); render();
+      }
+      else if (action==='pie-mode') {
+        state.pieMode = el.dataset.mode;
+        saveState();
+        render();
       }
       else if (action==='insights-view') {
         state.insightsView = el.dataset.view;
