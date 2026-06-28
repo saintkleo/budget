@@ -6,271 +6,581 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="apple-mobile-web-app-title" content="Budget"/>
-<title>Kyle &amp; Kirsten · Budget</title>
+<title>Kyle & Kirsten · Budget</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-  body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,system-ui,sans-serif;max-width:600px;margin:0 auto;min-height:100vh}
-  input,select,button{font-family:inherit;outline:none;appearance:none;-webkit-appearance:none}
-  input[type=number]::-webkit-inner-spin-button{display:none}
+:root {
+  --kyle:    #3b82f6;
+  --kyle-bg: #1a2d4a;
+  --kirs:    #ec4899;
+  --kirs-bg: #3d1a2e;
+  --green:   #10b981;
+  --bg:      #0a0f1e;
+  --surface: #111827;
+  --card:    #1a2236;
+  --border:  #1e2d45;
+  --border2: #243352;
+  --text:    #f0f4ff;
+  --muted:   #64748b;
+  --sub:     #94a3b8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif;max-width:600px;margin:0 auto;min-height:100vh}
+input,select,button{font-family:inherit;outline:none;appearance:none;-webkit-appearance:none}
+input[type=number]::-webkit-inner-spin-button{display:none}
 
-  /* Header */
-  #header{background:#1e293b;border-bottom:1px solid #334155;padding:env(safe-area-inset-top,16px) 16px 0;position:sticky;top:0;z-index:100}
-  #header-top{display:flex;justify-content:space-between;align-items:flex-start;padding-top:4px;margin-bottom:12px}
-  #header-eyebrow{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#64748b;font-weight:600}
-  #header-title{font-size:20px;font-weight:700;color:#f1f5f9;letter-spacing:-.02em;margin-top:2px}
-  #header-total-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.1em;text-align:right}
-  #header-total-value{font-size:22px;font-weight:700;font-family:monospace;color:#f1f5f9;text-align:right}
-  #tabs{display:flex}
-  .tab{flex:1;padding:10px 4px;border:none;background:transparent;color:#64748b;font-size:12px;font-weight:600;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s}
-  .tab.active{color:#38bdf8;border-bottom-color:#38bdf8}
+/* ── Header ── */
+#header{
+  background:linear-gradient(180deg,#151f35 0%,#111827 100%);
+  border-bottom:1px solid var(--border);
+  padding:env(safe-area-inset-top,16px) 16px 0;
+  position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(12px);
+}
+#header-top{display:flex;justify-content:space-between;align-items:center;padding-top:6px;margin-bottom:14px}
+.header-names{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.avatar-kyle{background:var(--kyle-bg);color:var(--kyle);border:1.5px solid var(--kyle)44}
+.avatar-kirs{background:var(--kirs-bg);color:var(--kirs);border:1.5px solid var(--kirs)44}
+.avatar-amp{font-size:12px;color:var(--muted);font-weight:400}
+.header-total-wrap{text-align:right}
+.header-total-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;font-weight:600}
+#header-total-value{font-size:24px;font-weight:800;font-family:monospace;color:var(--text);letter-spacing:-.02em}
+#month-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.month-nav{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1}
+.month-nav:active{color:var(--text)}
+#month-label{font-size:13px;font-weight:600;color:var(--sub);flex:1;text-align:center;letter-spacing:.02em}
+.month-reset{font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer}
+#tabs{display:flex;gap:2px}
+.tab{flex:1;padding:10px 2px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:700;border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.02em;transition:all .15s}
+.tab.active{color:var(--text);border-bottom-color:var(--kyle)}
 
-  /* Content */
-  #content{padding:16px;padding-bottom:calc(env(safe-area-inset-bottom,16px) + 16px)}
+/* ── Content ── */
+#content{padding:16px;padding-bottom:calc(env(safe-area-inset-bottom,16px)+24px)}
 
-  /* Stat cards */
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-  .stat-card{background:#1e293b;border-radius:10px;padding:12px 14px;border:1px solid #334155}
-  .stat-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
-  .stat-value{font-size:18px;font-weight:700;font-family:monospace;margin-top:4px}
+/* ── Glass card ── */
+.g-card{background:var(--card);border-radius:14px;border:1px solid var(--border2);overflow:hidden;margin-bottom:12px;box-shadow:0 4px 24px #00000033}
 
-  /* Category group */
-  .cat-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;margin-top:16px}
-  .cat-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
-  .cat-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b}
-  .cat-total{margin-left:auto;font-size:11px;color:#475569;font-family:monospace}
+/* ── Stat grid ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:12px;padding:13px 14px;border:1px solid var(--border2);box-shadow:0 2px 12px #00000022}
+.stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:4px}
+.stat-value{font-size:19px;font-weight:800;font-family:monospace;letter-spacing:-.01em}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
 
-  /* Bill list */
-  .card{background:#1e293b;border-radius:10px;border:1px solid #334155;overflow:hidden;margin-bottom:0}
-  .bill-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #0f172a;cursor:pointer}
-  .bill-row:first-child{border-top:none}
-  .bill-name{font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-  .bill-avg{font-size:11px;color:#475569;margin-top:2px}
-  .bill-amount{font-size:15px;font-weight:700;font-family:monospace;color:#f1f5f9;text-align:right}
-  .bill-freq{font-size:10px;color:#64748b}
-  .chevron{color:#475569;font-size:16px;flex-shrink:0}
+/* ── Pill ── */
+.pill{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
+.pill-kyle{background:var(--kyle-bg);color:var(--kyle);border:1px solid var(--kyle)33}
+.pill-kirs{background:var(--kirs-bg);color:var(--kirs);border:1px solid var(--kirs)33}
 
-  /* Pill */
-  .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-  .pill-kyle{background:#1e3a4c;color:#38bdf8}
-  .pill-kirsten{background:#2d1b69;color:#a78bfa}
+/* ── Category group ── */
+.cat-header{display:flex;align-items:center;gap:7px;margin:14px 0 6px}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.cat-total{margin-left:auto;font-size:11px;color:var(--sub);font-family:monospace;font-weight:600}
 
-  /* Edit form */
-  .edit-form{padding:12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid #0f172a}
-  .edit-form:first-child{border-top:none}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .inp{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:14px;width:100%}
-  .inp::placeholder{color:#475569}
-  .btn-row{display:flex;gap:8px}
-  .btn-primary{background:#38bdf8;border:none;border-radius:8px;padding:10px 18px;color:#0f172a;font-weight:700;font-size:14px;cursor:pointer;flex:1}
-  .btn-secondary{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px 18px;color:#94a3b8;font-size:14px;cursor:pointer;flex:1}
-  .btn-danger{background:#1e293b;border:1px solid #7f1d1d;border-radius:8px;padding:10px 18px;color:#f87171;font-size:14px;cursor:pointer;flex:1}
-  .add-btn{width:100%;background:#1e293b;border:1px dashed #334155;border-radius:10px;padding:14px;color:#64748b;font-size:13px;cursor:pointer;font-weight:500;margin-top:12px}
+/* ── Bill row ── */
+.bill-row{display:flex;align-items:center;gap:10px;padding:13px 14px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s}
+.bill-row:first-child{border-top:none}
+.bill-row:active{background:#ffffff08}
+.bill-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.bill-note{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bill-amount{font-size:15px;font-weight:700;font-family:monospace;color:var(--text);text-align:right}
+.bill-freq-badge{font-size:9px;background:#1e3a4c;color:#38bdf8;border-radius:4px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
+.chevron{color:var(--border2);font-size:18px;flex-shrink:0}
 
-  /* Add form */
-  .add-form{background:#1e293b;border-radius:10px;border:1px solid #334155;padding:14px;margin-top:12px;display:flex;flex-direction:column;gap:8px}
-  .add-form-title{font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
-  .charge-label{font-size:11px;font-weight:600;margin-bottom:4px}
+/* ── Forms ── */
+.edit-form{padding:13px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--border);background:#0d1525}
+.edit-form:first-child{border-top:none}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inp{background:#0a0f1e;border:1px solid var(--border2);border-radius:9px;padding:11px 13px;color:var(--text);font-size:14px;width:100%;transition:border-color .15s}
+.inp:focus{border-color:var(--kyle)}
+.inp::placeholder{color:#334155}
+.field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.btn-row{display:flex;gap:8px;margin-top:2px}
+.btn-primary{background:var(--kyle);border:none;border-radius:9px;padding:11px 18px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;flex:1;letter-spacing:.01em;box-shadow:0 2px 12px #3b82f644}
+.btn-primary:active{opacity:.85}
+.btn-secondary{background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:11px 18px;color:var(--sub);font-size:14px;cursor:pointer;flex:1}
+.btn-danger{background:#1a0d0d;border:1px solid #7f1d1d;border-radius:9px;padding:11px 18px;color:#f87171;font-size:14px;cursor:pointer;flex:1}
+.add-btn{width:100%;background:var(--card);border:1.5px dashed var(--border2);border-radius:12px;padding:14px;color:var(--muted);font-size:13px;cursor:pointer;font-weight:600;margin-top:10px;transition:all .15s}
+.add-btn:active{border-color:var(--kyle);color:var(--kyle)}
+.add-form{background:var(--card);border-radius:14px;border:1px solid var(--border2);padding:14px;margin-top:10px;display:flex;flex-direction:column;gap:9px;box-shadow:0 4px 24px #00000033}
+.add-form-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
 
-  /* Card item */
-  .cc-card{background:#1e293b;border-radius:10px;border:1px solid #334155;overflow:hidden;margin-bottom:12px}
-  .cc-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #0f172a;cursor:pointer}
-  .cc-name{font-size:14px;font-weight:600;color:#f1f5f9;margin-left:8px}
-  .cc-grid{display:grid;grid-template-columns:1fr 1fr}
-  .cc-cell{padding:10px 14px}
-  .cc-cell-right{border-left:1px solid #0f172a}
-  .cc-cell-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
-  .cc-cell-value{font-size:18px;font-weight:700;font-family:monospace;margin-top:3px}
-  .cc-footer{padding:8px 14px;background:#0f172a44;display:flex;justify-content:space-between;align-items:center}
-  .cc-footer-total{font-size:11px;color:#64748b}
-  .cc-footer-owed{font-size:11px;color:#34d399;font-weight:600}
+/* ── Credit cards ── */
+.cc-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.cc-name{font-size:14px;font-weight:700;color:var(--text);margin-left:8px}
+.cc-grid{display:grid;grid-template-columns:1fr 1fr}
+.cc-cell{padding:11px 14px}
+.cc-cell+.cc-cell{border-left:1px solid var(--border)}
+.cc-cell-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.cc-cell-val{font-size:19px;font-weight:800;font-family:monospace}
+.cc-footer{padding:8px 14px;background:#00000022;display:flex;justify-content:space-between;align-items:center}
+.cc-total{font-size:11px;color:var(--muted)}
+.cc-owed{font-size:11px;color:var(--green);font-weight:700}
 
-  /* Settlement */
-  .transfer-card{border-radius:14px;padding:24px 20px;margin-bottom:20px;text-align:center}
-  .transfer-label{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#64748b;font-weight:600;margin-bottom:6px}
-  .transfer-amount{font-size:44px;font-weight:800;font-family:monospace;letter-spacing:-.02em;margin-bottom:6px}
-  .transfer-direction{font-size:14px;color:#94a3b8}
-  .breakdown-card{background:#1e293b;border-radius:10px;border:1px solid #334155;overflow:hidden;margin-bottom:14px}
-  .breakdown-head{padding:12px 16px;border-bottom:1px solid #334155;background:#0f172a44;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b}
-  .sec-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#ffffff08}
-  .sec-header-label{font-size:12px;font-weight:700}
-  .sec-header-value{font-size:13px;font-family:monospace;font-weight:700}
-  .brow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #0f172a33}
-  .brow-label{font-size:13px;color:#94a3b8}
-  .brow-label.indent{font-size:12px;color:#475569;padding-left:12px}
-  .brow-note{font-size:10px;color:#64748b;margin-left:6px}
-  .brow-value{font-size:13px;font-family:monospace;color:#94a3b8}
-  .brow-value.colored{font-weight:600}
-  .brow-value.indent{font-size:12px;color:#475569}
-  .divider{height:1px;background:#0f172a}
-  .net-row{padding:14px 16px;background:#0f172a55}
-  .net-row-top{display:flex;justify-content:space-between;align-items:center}
-  .net-label{font-size:13px;font-weight:700;color:#e2e8f0}
-  .net-value{font-size:18px;font-weight:800;font-family:monospace;color:#34d399}
-  .net-sub{font-size:11px;color:#475569;margin-top:6px}
-  .water-card{background:#0f2318;border:1px solid #14532d44;border-radius:10px;padding:14px 16px}
-  .water-title{font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-  .water-sub{font-size:12px;color:#475569;margin-bottom:10px}
-  .water-row{display:flex;gap:8px;align-items:center}
-  .water-avg{font-size:12px;color:#64748b}
-  .hint{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:14px}
+/* ── Settlement ── */
+.transfer-hero{border-radius:16px;padding:26px 20px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden}
+.transfer-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,#ffffff08,transparent 70%);pointer-events:none}
+.transfer-eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.transfer-amount{font-size:48px;font-weight:900;font-family:monospace;letter-spacing:-.03em;margin-bottom:8px;line-height:1}
+.transfer-dir{font-size:14px;color:var(--sub);display:flex;align-items:center;justify-content:center;gap:8px}
+.transfer-arrow{font-size:18px}
+.breakdown-card{background:var(--card);border-radius:14px;border:1px solid var(--border2);overflow:hidden;margin-bottom:12px}
+.breakdown-hd{padding:12px 16px;border-bottom:1px solid var(--border);background:#00000022;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.sec-hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#ffffff06}
+.sec-hd-lbl{font-size:12px;font-weight:700}
+.sec-hd-val{font-size:13px;font-family:monospace;font-weight:700}
+.brow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #0f172a22;padding:7px 16px}
+.brow.indent{padding-left:28px}
+.brow-lbl{font-size:13px;color:var(--sub)}
+.brow.indent .brow-lbl{font-size:12px;color:var(--muted)}
+.brow-note{font-size:10px;color:var(--muted);margin-left:5px}
+.brow-val{font-size:13px;font-family:monospace;color:var(--sub)}
+.brow.indent .brow-val{font-size:12px;color:var(--muted)}
+.brow-val.hi{font-weight:700}
+.div-line{height:1px;background:var(--border)}
+.net-row{padding:14px 16px;background:#ffffff06}
+.net-top{display:flex;justify-content:space-between;align-items:center}
+.net-lbl{font-size:13px;font-weight:700;color:var(--text)}
+.net-val{font-size:20px;font-weight:900;font-family:monospace;color:var(--green)}
+.net-sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+/* ── Pie chart ── */
+.chart-wrap{background:var(--card);border-radius:14px;border:1px solid var(--border2);padding:18px 16px;margin-bottom:12px;box-shadow:0 4px 24px #00000033}
+.chart-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:16px}
+.chart-inner{display:flex;align-items:center;gap:16px}
+#pie-svg{flex-shrink:0}
+.chart-legend{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.legend-name{font-size:12px;color:var(--sub);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend-pct{font-size:12px;font-family:monospace;font-weight:700;color:var(--text);flex-shrink:0}
+
+/* ── Month history ── */
+.hist-card{background:var(--card);border-radius:14px;border:1px solid var(--border2);overflow:hidden;margin-bottom:12px}
+.hist-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border);cursor:pointer}
+.hist-row:first-child{border-top:none}
+.hist-month{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.hist-total{font-size:13px;font-family:monospace;font-weight:700;color:var(--sub)}
+.hist-transfer{font-size:12px;font-family:monospace;font-weight:700}
+
+/* ── Water ── */
+.water-card{background:#0c1f16;border:1px solid #14532d55;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.water-title{font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.water-sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.water-row{display:flex;gap:8px;align-items:center}
+.water-avg{font-size:12px;color:var(--muted)}
+
+/* ── Month-saved badge ── */
+.save-toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+24px);left:50%;transform:translateX(-50%);background:#10b98122;border:1px solid var(--green);color:var(--green);font-size:12px;font-weight:700;padding:8px 18px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:999}
+.save-toast.show{opacity:1}
+
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+/* ── Personal cards ── */
+.section-divider{display:flex;align-items:center;gap:10px;margin:20px 0 10px}
+.section-divider-line{flex:1;height:1px;background:var(--border)}
+.section-divider-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);white-space:nowrap}
+.personal-card-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s}
+.personal-card-row:first-child{border-top:none}
+.personal-card-row:active{background:#ffffff08}
+/* ── Income section ── */
+.income-card{background:var(--card);border-radius:14px;border:1px solid var(--border2);padding:16px;margin-bottom:12px;box-shadow:0 4px 24px #00000033}
+.income-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.income-row:last-child{margin-bottom:0}
+.income-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.income-label{font-size:13px;color:var(--sub);flex:1}
+.income-inp{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-size:15px;font-family:monospace;font-weight:700;width:150px;text-align:right}
+.income-inp:focus{border-color:var(--kyle);outline:none}
+.income-inp::placeholder{color:#334155;font-weight:400}
+
+/* ── View toggle ── */
+.view-toggle{display:flex;background:var(--bg);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.view-toggle-btn{flex:1;padding:9px 6px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.03em;transition:all .15s}
+.view-toggle-btn.active{background:var(--kyle);color:#fff}
+
+/* ── Line chart ── */
+.line-chart-wrap{background:var(--card);border-radius:14px;border:1px solid var(--border2);padding:16px;margin-bottom:12px;box-shadow:0 4px 24px #00000033;overflow:hidden}
+.line-chart-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
+.line-chart-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+#line-svg{width:100%;overflow:visible}
+.line-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.line-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
+.line-legend-dot{width:20px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* ── Surplus/deficit bars ── */
+.surplus-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.surplus-name{font-size:12px;color:var(--sub);width:54px;flex-shrink:0}
+.surplus-bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;position:relative}
+.surplus-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.surplus-val{font-size:11px;font-family:monospace;font-weight:700;min-width:70px;text-align:right}
+
 </style>
 </head>
 <body>
 
 <div id="header">
   <div id="header-top">
-    <div>
-      <div id="header-eyebrow">Household Budget</div>
-      <div id="header-title">Kyle &amp; Kirsten</div>
+    <div class="header-names">
+      <div class="avatar avatar-kyle">K</div>
+      <span class="avatar-amp">&amp;</span>
+      <div class="avatar avatar-kirs">K</div>
     </div>
-    <div>
-      <div id="header-total-label">Monthly Total</div>
-      <div id="header-total-value" id="grand-total">—</div>
+    <div class="header-total-wrap">
+      <div class="header-total-label">Monthly Total</div>
+      <div id="header-total-value">—</div>
     </div>
   </div>
+  <div id="month-bar">
+    <button class="month-nav" id="prev-month">‹</button>
+    <span id="month-label">—</span>
+    <button class="month-nav" id="next-month">›</button>
+    <button class="month-reset" id="go-today">Today</button>
+  </div>
   <div id="tabs">
-    <button class="tab active" data-tab="bills">📋 Bills</button>
-    <button class="tab" data-tab="cards">💳 Cards</button>
-    <button class="tab" data-tab="settlement">⚖️ Split</button>
+    <button class="tab active" data-tab="family">🏠 Family Split</button>
+    <button class="tab" data-tab="personal">👤 Personal</button>
+    <button class="tab" data-tab="insights">📊 Budget</button>
   </div>
 </div>
 
 <div id="content"></div>
+<div class="save-toast" id="toast">Saved ✓</div>
 
 <script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+const KYLE  = '#3b82f6';
+const KIRS  = '#ec4899';
+const GREEN = '#10b981';
+
+const CAT_COLORS = {
+  housing:'#6366f1', utilities:'#0ea5e9', insurance:'#10b981',
+  auto:'#f59e0b', subscriptions:'#a855f7', credit:'#ec4899', other:'#64748b'
+};
+const CATS = ['housing','utilities','insurance','auto','subscriptions','other'];
+
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+const STORAGE_KEY = 'kk-budget-v2';
+
+// ─── Default bills (fixed recurring) ─────────────────────────────────────────
+const DEFAULT_BILLS = [
+  {id:1, name:'Xcel Energy',  amount:158,  frequency:'monthly',   paidBy:'kyle',    category:'utilities', note:''},
+  {id:2, name:'Quantum',      amount:80,   frequency:'monthly',   paidBy:'kyle',    category:'utilities', note:''},
+  {id:3, name:'Water',        amount:0,    frequency:'quarterly', paidBy:'kyle',    category:'utilities', note:''},
+  {id:4, name:'State Farm',   amount:225,  frequency:'monthly',   paidBy:'kyle',    category:'insurance', note:''},
+  {id:5, name:'Natural Gas',  amount:60,   frequency:'monthly',   paidBy:'kyle',    category:'utilities', note:''},
+  {id:6, name:'Mortgage',     amount:1750, frequency:'monthly',   paidBy:'kirsten', category:'housing',   note:''},
+  {id:7, name:'Car Payment',  amount:670,  frequency:'monthly',   paidBy:'kirsten', category:'auto',      note:''},
+];
+
 // ─── State ────────────────────────────────────────────────────────────────────
 let state = {
-  activeTab: "bills",
+  activeTab: 'family',
   editingBill: null,
   editingCard: null,
   showAddBill: false,
   showAddCard: false,
-  bills: [
-    {id:1, name:"Xcel Energy",  amount:158,  frequency:"monthly",   paidBy:"kyle",    category:"utilities"},
-    {id:2, name:"Quantum",      amount:80,   frequency:"monthly",   paidBy:"kyle",    category:"utilities"},
-    {id:3, name:"Water",        amount:0,    frequency:"quarterly", paidBy:"kyle",    category:"utilities"},
-    {id:4, name:"State Farm",   amount:225,  frequency:"monthly",   paidBy:"kyle",    category:"insurance"},
-    {id:5, name:"Natural Gas",  amount:60,   frequency:"monthly",   paidBy:"kyle",    category:"utilities"},
-    {id:6, name:"Mortgage",     amount:1750, frequency:"monthly",   paidBy:"kirsten", category:"housing"},
-    {id:7, name:"Car Payment",  amount:670,  frequency:"monthly",   paidBy:"kirsten", category:"auto"},
-  ],
-  cards: [
-    {id:101, name:"Chase Sapphire", kyleAmount:0, kirstenAmount:0, paidBy:"kyle"},
-    {id:102, name:"Prime Visa",     kyleAmount:0, kirstenAmount:0, paidBy:"kirsten"},
-  ],
+  editingPersonalCard: null,
+  showAddPersonalCard: false,
+  insightsView: 'combined',
+  viewYear: new Date().getFullYear(),
+  viewMonth: new Date().getMonth(),
+  bills: DEFAULT_BILLS,
   nextBillId: 8,
-  nextCardId: 103,
+  // monthData: { "YYYY-MM": { cards: [...], notes: "" } }
+  monthData: {
+    // Seed current month with default cards so they're ready to use
+  },
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2}).format(n||0);
-const toMonthly = (a,f) => f==="quarterly" ? a/3 : f==="annual" ? a/12 : a;
-const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+// Helper: get resolved amounts for any card regardless of mode
+function cardDisplayAmounts(card) {
+  const mode = card.splitMode || 'charges';
+  if (mode === 'half') {
+    const total = parseFloat(card.totalAmount)||0;
+    return { ka: total/2, kia: total/2, total, owedByOther: total/2, otherName: card.paidBy==='kyle'?'Kirsten':'Kyle' };
+  }
+  const ka  = parseFloat(card.kyleAmount)||0;
+  const kia = parseFloat(card.kirstenAmount)||0;
+  return { ka, kia, total: ka+kia, owedByOther: card.paidBy==='kyle'?kia:ka, otherName: card.paidBy==='kyle'?'Kirsten':'Kyle' };
+}
 
-const CAT_COLOR = {housing:"#6366f1",utilities:"#0ea5e9",insurance:"#10b981",auto:"#f59e0b",subscriptions:"#ec4899",other:"#94a3b8"};
-const CATS = ["housing","utilities","insurance","auto","subscriptions","other"];
+
+// ─── Income helpers ───────────────────────────────────────────────────────────
+function getIncome(key) {
+  const md = state.monthData[key];
+  return {
+    kyle:    parseFloat(md?.kyleIncome)    || 0,
+    kirsten: parseFloat(md?.kirstenIncome) || 0,
+  };
+}
+
+function setIncome(key, who, val) {
+  if (!state.monthData[key]) state.monthData[key] = {};
+  if (!state.monthData[key].nextCardId) state.monthData[key].nextCardId = 101;
+  if (!state.monthData[key].cards)      state.monthData[key].cards      = [];
+  state.monthData[key][who === 'kyle' ? 'kyleIncome' : 'kirstenIncome'] = val;
+}
+
+// Build a sorted list of up to N months for charting
+function getChartMonths(n) {
+  const now = new Date();
+  const months = [];
+  for (let i = n-1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const yr = d.getFullYear(), mo = d.getMonth();
+    const key = `${yr}-${String(mo+1).padStart(2,'0')}`;
+    months.push({ key, yr, mo, label: MONTHS[mo].slice(0,3) + ' ' + String(yr).slice(2) });
+  }
+  return months;
+}
+
+// Compute per-person spending for a given month key
+function getSpending(key) {
+  const origY = state.viewYear, origM = state.viewMonth;
+  const [yr, mo] = key.split('-').map(Number);
+  state.viewYear = yr; state.viewMonth = mo - 1;
+  const s = calcSettlement();
+  state.viewYear = origY; state.viewMonth = origM;
+
+  // Kyle's spending: his bills + his card charges + his personal cards
+  const mdSnap = state.monthData[key] || {};
+  const pCards = mdSnap.personalCards || [];
+  const kylePersonal    = pCards.filter(c=>c.owner==='kyle').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
+  const kirstenPersonal = pCards.filter(c=>c.owner==='kirsten').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
+
+  const kyleSpend = s.kyleBillsTotal + s.cards.reduce((a,c) => {
+    const { ka } = cardDisplayAmounts(c);
+    return a + ka;
+  }, 0) + kylePersonal;
+  // Kirsten's spending: her bills + her card charges + her personal cards
+  const kirstenSpend = s.kirstenBillsTotal + s.cards.reduce((a,c) => {
+    const { kia } = cardDisplayAmounts(c);
+    return a + kia;
+  }, 0) + kirstenPersonal;
+
+  return { kyle: kyleSpend, kirsten: kirstenSpend, total: s.grandTotal };
+}
+
+// ─── Persistence ──────────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (!s) return;
+    const p = JSON.parse(s);
+    if (p.bills)       state.bills       = p.bills;
+    if (p.nextBillId)  state.nextBillId  = p.nextBillId;
+    if (p.monthData)   state.monthData   = p.monthData;
+    if (p.insightsView) state.insightsView = p.insightsView;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      bills:       state.bills,
+      nextBillId:  state.nextBillId,
+      monthData:   state.monthData,
+      insightsView: state.insightsView,
+    }));
+    showToast();
+  } catch(e) {}
+}
+
+let toastTimer;
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ─── Month key ────────────────────────────────────────────────────────────────
+function monthKey() {
+  return `${state.viewYear}-${String(state.viewMonth+1).padStart(2,'0')}`;
+}
+
+function getMonthData() {
+  const k = monthKey();
+  if (!state.monthData[k]) state.monthData[k] = { cards: [] };
+  if (!state.monthData[k].nextCardId)     state.monthData[k].nextCardId     = 101;
+  if (!state.monthData[k].cards)          state.monthData[k].cards          = [];
+  if (!state.monthData[k].personalCards)  state.monthData[k].personalCards  = [];
+  if (!state.monthData[k].nextPersonalId) state.monthData[k].nextPersonalId = 201;
+  return state.monthData[k];
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const fmt = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2}).format(n||0);
+const toMonthly = (a,f) => f==='quarterly' ? a/3 : f==='annual' ? a/12 : Number(a)||0;
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function pill(who) {
-  const cls = who==="kyle" ? "pill-kyle" : "pill-kirsten";
-  const label = who==="kyle" ? "Kyle" : "Kirsten";
+  const cls   = who==='kyle' ? 'pill-kyle' : 'pill-kirs';
+  const label = who==='kyle' ? 'Kyle' : 'Kirsten';
   return `<span class="pill ${cls}">${label}</span>`;
 }
 
+// ─── Settlement calc ──────────────────────────────────────────────────────────
 function calcSettlement() {
-  const processed = state.bills.map(b => ({...b, monthly: toMonthly(parseFloat(b.amount)||0, b.frequency)}));
-  const kyleBills    = processed.filter(b => b.paidBy==="kyle");
-  const kirstenBills = processed.filter(b => b.paidBy==="kirsten");
+  const md = getMonthData();
+  const cards = md.cards || [];
+
+  const processed = state.bills.map(b => ({...b, monthly: toMonthly(b.amount, b.frequency)}));
+  const kyleBills    = processed.filter(b => b.paidBy==='kyle');
+  const kirstenBills = processed.filter(b => b.paidBy==='kirsten');
   const kyleBillsTotal    = kyleBills.reduce((s,b)=>s+b.monthly,0);
   const kirstenBillsTotal = kirstenBills.reduce((s,b)=>s+b.monthly,0);
-  const kirstenOwesBillShare = kyleBillsTotal/2;
-  const kyleOwesBillShare    = kirstenBillsTotal/2;
+  const kirstenOwesBillShare = kyleBillsTotal / 2;
+  const kyleOwesBillShare    = kirstenBillsTotal / 2;
 
   let cardKyleOwes=0, cardKirstenOwes=0;
-  state.cards.forEach(c => {
-    const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
-    if (c.paidBy==="kyle") cardKirstenOwes+=kia; else cardKyleOwes+=ka;
+  cards.forEach(c => {
+    const mode = c.splitMode || 'charges';
+    if (mode === 'half') {
+      const total = parseFloat(c.totalAmount)||0;
+      const half  = total / 2;
+      if (c.paidBy==='kyle') cardKirstenOwes += half;
+      else                    cardKyleOwes    += half;
+    } else {
+      const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
+      if (c.paidBy==='kyle') cardKirstenOwes+=kia; else cardKyleOwes+=ka;
+    }
   });
-  const cardsTotalMonthly = state.cards.reduce((s,c)=>s+(parseFloat(c.kyleAmount)||0)+(parseFloat(c.kirstenAmount)||0),0);
+  const cardsTotalMonthly = cards.reduce((s,c) => {
+    const mode = c.splitMode || 'charges';
+    if (mode==='half') return s + (parseFloat(c.totalAmount)||0);
+    return s + (parseFloat(c.kyleAmount)||0) + (parseFloat(c.kirstenAmount)||0);
+  }, 0);
   const billNet  = kyleOwesBillShare - kirstenOwesBillShare;
   const cardNet  = cardKyleOwes - cardKirstenOwes;
   const netTransfer = billNet + cardNet;
   const grandTotal = kyleBillsTotal + kirstenBillsTotal + cardsTotalMonthly;
 
-  return {grandTotal, kyleBillsTotal, kirstenBillsTotal, kyleBills, kirstenBills,
-    kirstenOwesBillShare, kyleOwesBillShare, cardKyleOwes, cardKirstenOwes,
-    billNet, cardNet, netTransfer, cardsTotalMonthly, processed};
+  return {
+    grandTotal, kyleBillsTotal, kirstenBillsTotal, processed,
+    kyleBills, kirstenBills, kirstenOwesBillShare, kyleOwesBillShare,
+    cardKyleOwes, cardKirstenOwes, billNet, cardNet, netTransfer,
+    cardsTotalMonthly, cards,
+  };
+}
+
+// ─── Pie chart ────────────────────────────────────────────────────────────────
+function renderPie(s) {
+  // Build category totals (bills + credit cards as their own category)
+  const catTotals = {};
+  s.processed.forEach(b => {
+    const c = b.category||'other';
+    catTotals[c] = (catTotals[c]||0) + b.monthly;
+  });
+  if (s.cardsTotalMonthly > 0) catTotals['credit'] = (catTotals['credit']||0) + s.cardsTotalMonthly;
+
+  const entries = Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((s,[,v])=>s+v,0);
+  if (!total) return '';
+
+  // SVG donut
+  const R=70, r=42, cx=80, cy=80;
+  let startAngle = -Math.PI/2;
+  let slices = '';
+
+  entries.forEach(([cat, val]) => {
+    const angle = (val/total) * Math.PI * 2;
+    const endAngle = startAngle + angle;
+    const x1=cx+R*Math.cos(startAngle), y1=cy+R*Math.sin(startAngle);
+    const x2=cx+R*Math.cos(endAngle),   y2=cy+R*Math.sin(endAngle);
+    const ix1=cx+r*Math.cos(startAngle),iy1=cy+r*Math.sin(startAngle);
+    const ix2=cx+r*Math.cos(endAngle),  iy2=cy+r*Math.sin(endAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    const color = CAT_COLORS[cat]||'#64748b';
+    slices += `<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${r},${r} 0 ${large},0 ${ix1},${iy1} Z"
+      fill="${color}" opacity="0.92" stroke="var(--card)" stroke-width="2"/>`;
+    startAngle = endAngle;
+  });
+
+  const legend = entries.map(([cat,val]) =>
+    `<div class="legend-item">
+      <div class="legend-dot" style="background:${CAT_COLORS[cat]||'#64748b'}"></div>
+      <span class="legend-name">${cat}</span>
+      <span class="legend-pct">${Math.round(val/total*100)}%</span>
+    </div>`).join('');
+
+  return `<div class="chart-wrap">
+    <div class="chart-title">Spending Breakdown</div>
+    <div class="chart-inner">
+      <svg id="pie-svg" width="160" height="160" viewBox="0 0 160 160">
+        ${slices}
+        <circle cx="${cx}" cy="${cy}" r="${r-2}" fill="var(--card)"/>
+        <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="-apple-system,sans-serif">Total</text>
+        <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="800" font-family="monospace">${fmt(total).replace('.00','')}</text>
+      </svg>
+      <div class="chart-legend">${legend}</div>
+    </div>
+  </div>`;
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
   const s = calcSettlement();
 
-  // Update header total
-  document.getElementById("header-total-value").textContent = fmt(s.grandTotal);
+  // Header
+  document.getElementById('header-total-value').textContent = fmt(s.grandTotal);
+  document.getElementById('month-label').textContent = `${MONTHS[state.viewMonth]} ${state.viewYear}`;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===state.activeTab));
 
-  // Tabs
-  document.querySelectorAll(".tab").forEach(t => {
-    t.classList.toggle("active", t.dataset.tab === state.activeTab);
-  });
-
-  const el = document.getElementById("content");
-
-  if (state.activeTab === "bills") el.innerHTML = renderBills(s);
-  else if (state.activeTab === "cards") el.innerHTML = renderCards(s);
-  else el.innerHTML = renderSettlement(s);
+  const el = document.getElementById('content');
+  if      (state.activeTab==='family')   el.innerHTML = renderFamily(s);
+  else if (state.activeTab==='personal') el.innerHTML = renderPersonal(s);
+  else if (state.activeTab==='insights') el.innerHTML = renderInsights(s);
 
   attachEvents();
 }
 
 // ─── Bills Tab ────────────────────────────────────────────────────────────────
 function renderBills(s) {
-  let html = `<div class="stat-grid">
-    <div class="stat-card"><div class="stat-label">Kyle pays</div><div class="stat-value" style="color:#38bdf8">${fmt(s.kyleBillsTotal)}</div></div>
-    <div class="stat-card"><div class="stat-label">Kirsten pays</div><div class="stat-value" style="color:#a78bfa">${fmt(s.kirstenBillsTotal)}</div></div>
-  </div>`;
-
-  // Group by category
+  // (internal – called by renderFamily)
+  let html = '';
   const groups = {};
-  CATS.forEach(c => groups[c]=[]);
-  s.processed.forEach(b => { const c=b.category||"other"; if(!groups[c])groups[c]=[]; groups[c].push(b); });
+  CATS.forEach(c=>groups[c]=[]);
+  s.processed.forEach(b=>{ const c=b.category||'other'; if(!groups[c])groups[c]=[]; groups[c].push(b); });
 
-  Object.entries(groups).forEach(([cat, items]) => {
+  Object.entries(groups).forEach(([cat,items]) => {
     if (!items.length) return;
-    const catTotal = items.reduce((sum,b)=>sum+b.monthly,0);
-    const color = CAT_COLOR[cat]||"#94a3b8";
+    const catTotal = items.reduce((s,b)=>s+b.monthly,0);
     html += `<div class="cat-header">
-      <span class="cat-dot" style="background:${color}"></span>
+      <span class="cat-dot" style="background:${CAT_COLORS[cat]||'#64748b'}"></span>
       <span class="cat-name">${esc(cat)}</span>
       <span class="cat-total">${fmt(catTotal)}/mo</span>
-    </div><div class="card">`;
-
+    </div><div class="g-card">`;
     items.forEach(bill => {
-      if (state.editingBill === bill.id) {
-        html += renderBillEditForm(bill);
+      if (state.editingBill===bill.id) {
+        html += renderBillEdit(bill);
       } else {
         html += `<div class="bill-row" data-action="edit-bill" data-id="${bill.id}">
           <div style="flex:1;min-width:0">
             <div class="bill-name">${esc(bill.name)}</div>
-            ${bill.frequency!=="monthly" ? `<div class="bill-avg">${fmt(bill.monthly)}/mo avg</div>` : ""}
+            ${bill.note ? `<div class="bill-note">${esc(bill.note)}</div>` : bill.frequency!=='monthly' ? `<div class="bill-note">${fmt(bill.monthly)}/mo avg</div>` : ''}
           </div>
+          ${bill.frequency!=='monthly'?`<span class="bill-freq-badge">${bill.frequency.slice(0,1).toUpperCase()}</span>`:''}
           ${pill(bill.paidBy)}
-          <div style="text-align:right;min-width:70px">
+          <div style="text-align:right;min-width:72px">
             <div class="bill-amount">${fmt(bill.amount)}</div>
-            ${bill.frequency!=="monthly" ? `<div class="bill-freq">/${bill.frequency[0]}</div>` : ""}
+            ${bill.frequency!=='monthly'?`<div style="font-size:10px;color:var(--muted)">/${bill.frequency.slice(0,1)}</div>`:''}
           </div>
           <span class="chevron">›</span>
         </div>`;
       }
     });
-    html += `</div>`;
+    html += '</div>';
   });
-
   if (state.showAddBill) {
     html += `<div class="add-form">
       <div class="add-form-title">New Bill</div>
-      <input class="inp" id="nb-name" placeholder="Bill name" value=""/>
+      <input class="inp" id="nb-name" placeholder="Bill name"/>
       <div class="form-row">
-        <input class="inp" id="nb-amount" type="number" inputmode="decimal" placeholder="Amount"/>
+        <input class="inp" id="nb-amount" type="number" inputmode="decimal" placeholder="Amount" style="font-family:monospace"/>
         <select class="inp" id="nb-freq">
           <option value="monthly">Monthly</option>
           <option value="quarterly">Quarterly</option>
@@ -283,9 +593,10 @@ function renderBills(s) {
           <option value="kirsten">Kirsten pays</option>
         </select>
         <select class="inp" id="nb-cat">
-          ${CATS.map(c=>`<option value="${c}">${c}</option>`).join("")}
+          ${CATS.map(c=>`<option value="${c}">${c}</option>`).join('')}
         </select>
       </div>
+      <input class="inp" id="nb-note" placeholder="Note (optional)"/>
       <div class="btn-row">
         <button class="btn-primary" data-action="confirm-add-bill">Add Bill</button>
         <button class="btn-secondary" data-action="cancel-add-bill">Cancel</button>
@@ -297,24 +608,25 @@ function renderBills(s) {
   return html;
 }
 
-function renderBillEditForm(bill) {
+function renderBillEdit(bill) {
   return `<div class="edit-form">
     <input class="inp" data-field="name" data-id="${bill.id}" data-type="bill" value="${esc(bill.name)}" placeholder="Bill name"/>
     <div class="form-row">
-      <input class="inp" data-field="amount" data-id="${bill.id}" data-type="bill" type="number" inputmode="decimal" value="${bill.amount}" placeholder="Amount" style="font-family:monospace"/>
+      <input class="inp" data-field="amount" data-id="${bill.id}" data-type="bill" type="number" inputmode="decimal" value="${bill.amount}" style="font-family:monospace"/>
       <select class="inp" data-field="frequency" data-id="${bill.id}" data-type="bill">
-        ${["monthly","quarterly","annual"].map(f=>`<option value="${f}"${bill.frequency===f?" selected":""}>${f.charAt(0).toUpperCase()+f.slice(1)}</option>`).join("")}
+        ${['monthly','quarterly','annual'].map(f=>`<option value="${f}"${bill.frequency===f?' selected':''}>${f.charAt(0).toUpperCase()+f.slice(1)}</option>`).join('')}
       </select>
     </div>
     <div class="form-row">
       <select class="inp" data-field="paidBy" data-id="${bill.id}" data-type="bill">
-        <option value="kyle"${bill.paidBy==="kyle"?" selected":""}>Kyle pays</option>
-        <option value="kirsten"${bill.paidBy==="kirsten"?" selected":""}>Kirsten pays</option>
+        <option value="kyle"${bill.paidBy==='kyle'?' selected':''}>Kyle pays</option>
+        <option value="kirsten"${bill.paidBy==='kirsten'?' selected':''}>Kirsten pays</option>
       </select>
       <select class="inp" data-field="category" data-id="${bill.id}" data-type="bill">
-        ${CATS.map(c=>`<option value="${c}"${bill.category===c?" selected":""}>${c}</option>`).join("")}
+        ${CATS.map(c=>`<option value="${c}"${bill.category===c?' selected':''}>${c}</option>`).join('')}
       </select>
     </div>
+    <input class="inp" data-field="note" data-id="${bill.id}" data-type="bill" value="${esc(bill.note||'')}" placeholder="Note (optional)"/>
     <div class="btn-row">
       <button class="btn-primary" data-action="done-edit-bill" data-id="${bill.id}">Done</button>
       <button class="btn-danger" data-action="delete-bill" data-id="${bill.id}">Delete</button>
@@ -322,281 +634,847 @@ function renderBillEditForm(bill) {
   </div>`;
 }
 
-// ─── Cards Tab ────────────────────────────────────────────────────────────────
-function renderCards(s) {
-  let html = `<p class="hint">Enter each person's charges this month. The cardholder fronts the full balance — the other person owes their portion.</p>`;
+// ─── Shared card helpers ──────────────────────────────────────────────────────
+function splitModeToggle(card) {
+  const mode = card.splitMode || 'charges';
+  const opts = [{val:'charges',label:'By charges'},{val:'half',label:'Split 50/50'}];
+  return `<div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:2px">
+    ${opts.map(o=>`<button data-action="set-split-mode" data-id="${card.id}" data-mode="${o.val}"
+      style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.02em;transition:all .15s;
+        background:${mode===o.val?'var(--kyle)':'transparent'};color:${mode===o.val?'#fff':'var(--muted)'}">${o.label}</button>`).join('')}
+  </div>`;
+}
 
-  state.cards.forEach(card => {
-    const ka  = parseFloat(card.kyleAmount)||0;
-    const kia = parseFloat(card.kirstenAmount)||0;
-    const total = ka+kia;
-    const owedByOther = card.paidBy==="kyle" ? kia : ka;
-    const otherName   = card.paidBy==="kyle" ? "Kirsten" : "Kyle";
+function renderCardEditForm(card) {
+  const mode = card.splitMode || 'charges';
+  let inputs = '';
+  if (mode === 'half') {
+    inputs = `<div>
+      <div class="field-label">Total bill amount</div>
+      <input class="inp" data-field="totalAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+        value="${card.totalAmount||''}" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">Each person owes: <strong style="color:var(--green);font-family:monospace">${fmt((parseFloat(card.totalAmount)||0)/2)}</strong></div>
+    </div>`;
+  } else {
+    inputs = `<div class="form-row">
+      <div>
+        <div class="field-label" style="color:${KYLE}">Kyle's charges</div>
+        <input class="inp" data-field="kyleAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+          value="${card.kyleAmount||''}" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
+      </div>
+      <div>
+        <div class="field-label" style="color:${KIRS}">Kirsten's charges</div>
+        <input class="inp" data-field="kirstenAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+          value="${card.kirstenAmount||''}" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
+      </div>
+    </div>`;
+  }
+  return `<div class="edit-form" style="border-top:none">
+    <input class="inp" data-field="name" data-id="${card.id}" data-type="card" value="${esc(card.name)}" placeholder="Card name"/>
+    <div><div class="field-label">Split method</div>${splitModeToggle(card)}</div>
+    <select class="inp" data-field="paidBy" data-id="${card.id}" data-type="card">
+      <option value="kyle"${card.paidBy==='kyle'?' selected':''}>Kyle pays the bill</option>
+      <option value="kirsten"${card.paidBy==='kirsten'?' selected':''}>Kirsten pays the bill</option>
+    </select>
+    ${inputs}
+    <div class="btn-row">
+      <button class="btn-primary" data-action="done-edit-card" data-id="${card.id}">Done</button>
+      <button class="btn-danger" data-action="delete-card" data-id="${card.id}">Delete</button>
+    </div>
+  </div>`;
+}
 
-    html += `<div class="cc-card">`;
-    if (state.editingCard === card.id) {
-      html += `<div class="edit-form" style="border-top:none">
-        <input class="inp" data-field="name" data-id="${card.id}" data-type="card" value="${esc(card.name)}" placeholder="Card name"/>
-        <select class="inp" data-field="paidBy" data-id="${card.id}" data-type="card">
-          <option value="kyle"${card.paidBy==="kyle"?" selected":""}>Kyle pays the bill</option>
-          <option value="kirsten"${card.paidBy==="kirsten"?" selected":""}>Kirsten pays the bill</option>
-        </select>
-        <div class="form-row">
-          <div>
-            <div class="charge-label" style="color:#38bdf8">Kyle's charges</div>
-            <input class="inp" data-field="kyleAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal" value="${card.kyleAmount||""}" placeholder="0.00" style="font-family:monospace;color:#38bdf8"/>
-          </div>
-          <div>
-            <div class="charge-label" style="color:#a78bfa">Kirsten's charges</div>
-            <input class="inp" data-field="kirstenAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal" value="${card.kirstenAmount||""}" placeholder="0.00" style="font-family:monospace;color:#a78bfa"/>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-primary" data-action="done-edit-card" data-id="${card.id}">Done</button>
-          <button class="btn-danger" data-action="delete-card" data-id="${card.id}">Delete</button>
-        </div>
-      </div>`;
+function renderSharedCards(s) {
+  // Returns HTML for shared cards + add button (used inside renderFamily)
+  const md = getMonthData();
+  const cards = md.cards || [];
+  let html = '';
+
+  cards.forEach(card => {
+    const mode = card.splitMode || 'charges';
+    const { ka, kia, total, owedByOther, otherName } = cardDisplayAmounts(card);
+    const modeBadge = mode==='half'
+      ? `<span style="font-size:10px;font-weight:700;background:#0a2a1a;color:var(--green);border:1px solid var(--green)33;padding:2px 7px;border-radius:20px">50/50</span>`
+      : `<span style="font-size:10px;font-weight:700;background:var(--kyle-bg);color:var(--kyle);border:1px solid var(--kyle)33;padding:2px 7px;border-radius:20px">By charges</span>`;
+
+    html += `<div class="g-card">`;
+    if (state.editingCard===card.id) {
+      html += renderCardEditForm(card);
     } else {
-      html += `<div class="cc-header" data-action="edit-card" data-id="${card.id}">
-        <div style="display:flex;align-items:center">
-          <span style="font-size:18px">💳</span>
-          <span class="cc-name">${esc(card.name)}</span>
-        </div>
+      html += `<div class="cc-hdr" data-action="edit-card" data-id="${card.id}">
+        <div style="display:flex;align-items:center;gap:8px">💳<span class="cc-name">${esc(card.name)}</span>${modeBadge}</div>
         <div style="display:flex;align-items:center;gap:8px">${pill(card.paidBy)}<span class="chevron">›</span></div>
-      </div>
-      <div class="cc-grid" data-action="edit-card" data-id="${card.id}" style="cursor:pointer">
-        <div class="cc-cell">
-          <div class="cc-cell-label" style="color:#38bdf8">Kyle</div>
-          <div class="cc-cell-value" style="color:${ka>0?"#38bdf8":"#334155"}">${fmt(ka)}</div>
-        </div>
-        <div class="cc-cell cc-cell-right">
-          <div class="cc-cell-label" style="color:#a78bfa">Kirsten</div>
-          <div class="cc-cell-value" style="color:${kia>0?"#a78bfa":"#334155"}">${fmt(kia)}</div>
-        </div>
-      </div>
-      <div class="cc-footer">
-        <span class="cc-footer-total">Total: <span style="font-family:monospace;color:#94a3b8">${fmt(total)}</span></span>
-        ${owedByOther>0 ? `<span class="cc-footer-owed">${esc(otherName)} owes ${fmt(owedByOther)}</span>` : ""}
+      </div>`;
+      if (mode === 'half') {
+        html += `<div style="padding:14px 16px;text-align:center;cursor:pointer" data-action="edit-card" data-id="${card.id}">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total Bill</div>
+          <div style="font-size:28px;font-weight:800;font-family:monospace;color:var(--green)">${fmt(total)}</div>
+          <div style="display:flex;justify-content:center;gap:24px;margin-top:10px">
+            <div style="text-align:center">
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${KYLE};margin-bottom:3px">Kyle</div>
+              <div style="font-size:16px;font-weight:700;font-family:monospace;color:${KYLE}">${fmt(ka)}</div>
+            </div>
+            <div style="font-size:18px;color:var(--muted);align-self:center">=</div>
+            <div style="text-align:center">
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${KIRS};margin-bottom:3px">Kirsten</div>
+              <div style="font-size:16px;font-weight:700;font-family:monospace;color:${KIRS}">${fmt(kia)}</div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        html += `<div class="cc-grid" data-action="edit-card" data-id="${card.id}" style="cursor:pointer">
+          <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KYLE}">Kyle</div><div class="cc-cell-val" style="color:${ka>0?KYLE:'var(--border2)'}">${fmt(ka)}</div></div>
+          <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KIRS}">Kirsten</div><div class="cc-cell-val" style="color:${kia>0?KIRS:'var(--border2)'}">${fmt(kia)}</div></div>
+        </div>`;
+      }
+      html += `<div class="cc-footer">
+        <span class="cc-total">Total: <span style="font-family:monospace;font-weight:700">${fmt(total)}</span></span>
+        ${owedByOther>0?`<span class="cc-owed">${esc(otherName)} owes ${fmt(owedByOther)}</span>`:''}
       </div>`;
     }
-    html += `</div>`;
+    html += '</div>';
   });
 
   if (state.showAddCard) {
     html += `<div class="add-form">
-      <div class="add-form-title">New Card</div>
-      <input class="inp" id="nc-name" placeholder="Card name (e.g. Citi Double Cash)"/>
+      <div class="add-form-title">New Shared Card</div>
+      <input class="inp" id="nc-name" placeholder="Card name (e.g. Chase Sapphire)"/>
+      <div>
+        <div class="field-label">Split method</div>
+        <div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden">
+          <button id="nc-mode-charges" data-mode="charges" data-action="new-card-mode"
+            style="flex:1;padding:9px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:var(--kyle);color:#fff">By charges</button>
+          <button id="nc-mode-half" data-mode="half" data-action="new-card-mode"
+            style="flex:1;padding:9px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:transparent;color:var(--muted)">Split 50/50</button>
+        </div>
+      </div>
       <select class="inp" id="nc-payer">
         <option value="kyle">Kyle pays the bill</option>
         <option value="kirsten">Kirsten pays the bill</option>
       </select>
-      <div class="form-row">
-        <div>
-          <div class="charge-label" style="color:#38bdf8">Kyle's charges</div>
-          <input class="inp" id="nc-kyle" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace"/>
-        </div>
-        <div>
-          <div class="charge-label" style="color:#a78bfa">Kirsten's charges</div>
-          <input class="inp" id="nc-kirsten" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace"/>
+      <div id="nc-inputs">
+        <div class="form-row">
+          <div>
+            <div class="field-label" style="color:${KYLE}">Kyle's charges</div>
+            <input class="inp" id="nc-kyle" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
+          </div>
+          <div>
+            <div class="field-label" style="color:${KIRS}">Kirsten's charges</div>
+            <input class="inp" id="nc-kirsten" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
+          </div>
         </div>
       </div>
+      <input type="hidden" id="nc-split-mode" value="charges"/>
       <div class="btn-row">
         <button class="btn-primary" data-action="confirm-add-card">Add Card</button>
         <button class="btn-secondary" data-action="cancel-add-card">Cancel</button>
       </div>
     </div>`;
   } else {
-    html += `<button class="add-btn" data-action="show-add-card">+ Add Card</button>`;
+    html += `<button class="add-btn" data-action="show-add-card">+ Add Shared Card</button>`;
   }
   return html;
 }
 
-// ─── Settlement Tab ───────────────────────────────────────────────────────────
-function renderSettlement(s) {
-  const nt = s.netTransfer;
-  const transferBg   = nt>0 ? "linear-gradient(135deg,#0c2233 0%,#0f172a 100%)"
-                     : nt<0 ? "linear-gradient(135deg,#1a0c33 0%,#0f172a 100%)"
-                     :        "linear-gradient(135deg,#0c2318 0%,#0f172a 100%)";
-  const borderColor  = nt>0 ? "#0ea5e9" : nt<0 ? "#7c3aed" : "#14532d";
-  const amountColor  = nt>0 ? "#38bdf8" : nt<0 ? "#a78bfa" : "#34d399";
-  const directionHtml = nt>0
-    ? `<span style="color:#38bdf8;font-weight:600">Kyle</span> → <span style="color:#a78bfa;font-weight:600">Kirsten</span>`
-    : nt<0
-    ? `<span style="color:#a78bfa;font-weight:600">Kirsten</span> → <span style="color:#38bdf8;font-weight:600">Kyle</span>`
-    : `Perfectly balanced ✓`;
+// ─── Family Split tab (Bills + Shared Cards + Settlement) ─────────────────────
+function renderFamily(s) {
+  const md = getMonthData();
+  const cards = md.cards || [];
 
-  const brows = (label,value,indent,color,note) => {
-    const lc = indent ? "brow-label indent" : "brow-label";
-    const vc = indent ? "brow-value indent" : `brow-value${color?" colored":""}`;
-    const noteHtml = note ? `<span class="brow-note">(${note})</span>` : "";
-    return `<div class="brow" style="padding:7px ${indent?28:16}px">
-      <div><span class="${lc}">${esc(label)}</span>${noteHtml}</div>
-      <span class="${vc}" style="${color?`color:${color}`:""}">${esc(value)}</span>
-    </div>`;
-  };
-
-  const secHead = (label,value,color) =>
-    `<div class="sec-header">
-      <span class="sec-header-label" style="color:${color}">${esc(label)}</span>
-      <span class="sec-header-value" style="color:${color}">${esc(value)}</span>
-    </div>`;
-
-  let breakdown = "";
-  breakdown += secHead("Bills Kyle pays", fmt(s.kyleBillsTotal), "#38bdf8");
-  s.kyleBills.forEach(b => { breakdown += brows(b.name, fmt(b.monthly)+"/mo", true); });
-  breakdown += brows("Kirsten's half of Kyle's bills", fmt(s.kirstenOwesBillShare), false, "#f87171", "Kirsten owes Kyle");
-  breakdown += `<div class="divider"></div>`;
-  breakdown += secHead("Bills Kirsten pays", fmt(s.kirstenBillsTotal), "#a78bfa");
-  s.kirstenBills.forEach(b => { breakdown += brows(b.name, fmt(b.monthly)+"/mo", true); });
-  breakdown += brows("Kyle's half of Kirsten's bills", fmt(s.kyleOwesBillShare), false, "#34d399", "Kyle owes Kirsten");
-
-  if (s.cardsTotalMonthly > 0) {
-    breakdown += `<div class="divider"></div>`;
-    breakdown += secHead("Credit cards", fmt(s.cardsTotalMonthly), "#f59e0b");
-    state.cards.forEach(c => {
-      const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
-      const owedByOther = c.paidBy==="kyle" ? kia : ka;
-      const otherName   = c.paidBy==="kyle" ? "Kirsten" : "Kyle";
-      if (owedByOther>0) breakdown += brows(c.name, fmt(owedByOther), true, null, `${otherName} owes`);
-    });
-    if (s.cardKyleOwes>0)    breakdown += brows("Kyle owes (cards)",    fmt(s.cardKyleOwes),    false,"#34d399");
-    if (s.cardKirstenOwes>0) breakdown += brows("Kirsten owes (cards)", fmt(s.cardKirstenOwes), false,"#f87171");
-  }
-
-  breakdown += `<div class="divider"></div>`;
-  breakdown += `<div class="net-row">
-    <div class="net-row-top">
-      <span class="net-label">${nt>=0?"Kyle sends Kirsten":"Kirsten sends Kyle"}</span>
-      <span class="net-value">${fmt(Math.abs(nt))}</span>
+  // ── Stat bar ──────────────────────────────────────────────────────────────
+  let html = `<div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label" style="color:${KYLE}">Kyle pays</div>
+      <div class="stat-value" style="color:${KYLE}">${fmt(s.kyleBillsTotal)}</div>
+      <div class="stat-sub">${s.kyleBills.length} bills</div>
     </div>
-    <div class="net-sub">
-      Bills net: ${fmt(Math.abs(s.billNet))} ${s.billNet>=0?"(Kyle→Kirsten)":"(Kirsten→Kyle)"}
-      ${s.cardsTotalMonthly>0 ? ` · Cards net: ${fmt(Math.abs(s.cardNet))} ${s.cardNet>=0?"(Kyle→Kirsten)":"(Kirsten→Kyle)"}` : ""}
+    <div class="stat-card">
+      <div class="stat-label" style="color:${KIRS}">Kirsten pays</div>
+      <div class="stat-value" style="color:${KIRS}">${fmt(s.kirstenBillsTotal)}</div>
+      <div class="stat-sub">${s.kirstenBills.length} bills</div>
     </div>
   </div>`;
 
-  const waterBill = state.bills.find(b=>b.name==="Water");
-  const waterAmt  = parseFloat(waterBill?.amount)||0;
+  // ── Bills section ─────────────────────────────────────────────────────────
+  html += `<div class="section-divider">
+    <div class="section-divider-line"></div>
+    <span class="section-divider-label">📋 Recurring Bills</span>
+    <div class="section-divider-line"></div>
+  </div>`;
+  html += renderBills(s);
 
-  return `
-    <div class="transfer-card" style="background:${transferBg};border:1px solid ${borderColor}44">
-      <div class="transfer-label">This Month's Transfer</div>
-      <div class="transfer-amount" style="color:${amountColor}">${fmt(Math.abs(nt))}</div>
-      <div class="transfer-direction">${directionHtml}</div>
-    </div>
-    <div class="breakdown-card">
-      <div class="breakdown-head">How It's Calculated</div>
-      ${breakdown}
-    </div>
-    <div class="water-card">
-      <div class="water-title">💧 Water Bill (Quarterly)</div>
-      <div class="water-sub">Enter the quarterly amount to include it in monthly averages.</div>
-      <div class="water-row">
-        <input class="inp" id="water-input" type="number" inputmode="decimal" placeholder="e.g. 90" value="${waterAmt||""}" style="width:110px;font-family:monospace;color:#4ade80"/>
-        <span class="water-avg">= ${fmt(waterAmt/3)}/mo</span>
-      </div>
+  // ── Shared Cards section ──────────────────────────────────────────────────
+  html += `<div class="section-divider">
+    <div class="section-divider-line"></div>
+    <span class="section-divider-label">💳 Shared Cards · ${MONTHS[state.viewMonth]}</span>
+    <div class="section-divider-line"></div>
+  </div>
+  <p class="hint">Tap a card to edit charges or split method.</p>`;
+  html += renderSharedCards(s);
+
+  // ── Settlement section ────────────────────────────────────────────────────
+  const nt = s.netTransfer;
+  const transferBg  = nt>0?'linear-gradient(135deg,#0c1f35,#0a0f1e)':nt<0?'linear-gradient(135deg,#1a0d20,#0a0f1e)':'linear-gradient(135deg,#0a1f14,#0a0f1e)';
+  const borderColor = nt>0?KYLE:nt<0?KIRS:GREEN;
+  const amountColor = nt>0?KYLE:nt<0?KIRS:GREEN;
+  const dirHtml     = nt>0
+    ? `<span style="color:${KYLE};font-weight:700">Kyle</span><span class="transfer-arrow">→</span><span style="color:${KIRS};font-weight:700">Kirsten</span>`
+    : nt<0
+    ? `<span style="color:${KIRS};font-weight:700">Kirsten</span><span class="transfer-arrow">→</span><span style="color:${KYLE};font-weight:700">Kyle</span>`
+    : `<span style="color:${GREEN}">Perfectly balanced ✓</span>`;
+
+  html += `<div class="section-divider">
+    <div class="section-divider-line"></div>
+    <span class="section-divider-label">⚖️ Settlement · ${MONTHS[state.viewMonth]}</span>
+    <div class="section-divider-line"></div>
+  </div>`;
+
+  html += `<div class="transfer-hero" style="background:${transferBg};border:1px solid ${borderColor}44">
+    <div class="transfer-eyebrow">${MONTHS[state.viewMonth]} Transfer</div>
+    <div class="transfer-amount" style="color:${amountColor}">${fmt(Math.abs(nt))}</div>
+    <div class="transfer-dir">${dirHtml}</div>
+  </div>`;
+
+  // Breakdown
+  const brow = (lbl,val,indent,color,note) =>
+    `<div class="brow${indent?' indent':''}">
+      <div><span class="brow-lbl">${esc(lbl)}</span>${note?`<span class="brow-note">(${esc(note)})</span>`:''}</div>
+      <span class="brow-val${color?' hi':''}" style="${color?`color:${color}`:''}>${esc(val)}</span>
     </div>`;
+  const secHd = (lbl,val,color) =>
+    `<div class="sec-hd"><span class="sec-hd-lbl" style="color:${color}">${esc(lbl)}</span><span class="sec-hd-val" style="color:${color}">${esc(val)}</span></div>`;
+
+  let bd = '';
+  bd += secHd('Bills Kyle pays', fmt(s.kyleBillsTotal), KYLE);
+  s.kyleBills.forEach(b => { bd += brow(b.name, fmt(b.monthly)+'/mo', true); });
+  bd += brow("Kirsten's half", fmt(s.kirstenOwesBillShare), false, '#f87171', 'Kirsten owes Kyle');
+  bd += '<div class="div-line"></div>';
+  bd += secHd('Bills Kirsten pays', fmt(s.kirstenBillsTotal), KIRS);
+  s.kirstenBills.forEach(b => { bd += brow(b.name, fmt(b.monthly)+'/mo', true); });
+  bd += brow("Kyle's half", fmt(s.kyleOwesBillShare), false, GREEN, 'Kyle owes Kirsten');
+
+  if (s.cardsTotalMonthly > 0) {
+    bd += '<div class="div-line"></div>';
+    bd += secHd('Shared cards', fmt(s.cardsTotalMonthly), '#a855f7');
+    s.cards.forEach(c => {
+      const mode = c.splitMode || 'charges';
+      let owe, who;
+      if (mode === 'half') {
+        const total = parseFloat(c.totalAmount)||0; owe = total/2; who = c.paidBy==='kyle'?'Kirsten':'Kyle';
+      } else {
+        const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
+        owe = c.paidBy==='kyle'?kia:ka; who = c.paidBy==='kyle'?'Kirsten':'Kyle';
+      }
+      const modeLabel = mode==='half'?'50/50 split':`${who}'s charges`;
+      if (owe>0) bd += brow(c.name, fmt(owe), true, null, `${who} owes · ${modeLabel}`);
+    });
+    if (s.cardKyleOwes>0)    bd += brow('Kyle owes (cards)',    fmt(s.cardKyleOwes),    false, GREEN);
+    if (s.cardKirstenOwes>0) bd += brow('Kirsten owes (cards)', fmt(s.cardKirstenOwes), false, '#f87171');
+  }
+
+  bd += '<div class="div-line"></div>';
+  bd += `<div class="net-row">
+    <div class="net-top">
+      <span class="net-lbl">${nt>=0?'Kyle sends Kirsten':'Kirsten sends Kyle'}</span>
+      <span class="net-val">${fmt(Math.abs(nt))}</span>
+    </div>
+    <div class="net-sub">
+      Bills: ${fmt(Math.abs(s.billNet))} ${s.billNet>=0?'(Kyle→Kirsten)':'(Kirsten→Kyle)'}
+      ${s.cardsTotalMonthly>0?` · Cards: ${fmt(Math.abs(s.cardNet))}`:''}
+    </div>
+  </div>`;
+
+  html += `<div class="breakdown-card"><div class="breakdown-hd">How It's Calculated</div>${bd}</div>`;
+
+  // Water input
+  const waterBill = state.bills.find(b=>b.name==='Water');
+  const waterAmt  = parseFloat(waterBill?.amount)||0;
+  html += `<div class="water-card">
+    <div class="water-title">💧 Water Bill (Quarterly)</div>
+    <div class="water-sub">Enter the quarterly total — averaged monthly.</div>
+    <div class="water-row">
+      <input class="inp" id="water-input" type="number" inputmode="decimal" placeholder="e.g. 90" value="${waterAmt||''}" style="width:110px;font-family:monospace;color:#4ade80"/>
+      <span class="water-avg" id="water-avg">= ${fmt(waterAmt/3)}/mo</span>
+    </div>
+  </div>`;
+
+  return html;
 }
 
-// ─── Event Delegation ─────────────────────────────────────────────────────────
-function attachEvents() {
-  const content = document.getElementById("content");
+// ─── Personal Spend tab ────────────────────────────────────────────────────────
+function renderPersonal(s) {
+  const md = getMonthData();
+  const pcards = md.personalCards || [];
 
-  // Live field updates (bills & cards)
-  content.querySelectorAll("[data-field]").forEach(el => {
-    el.addEventListener("input", () => {
-      const id   = parseInt(el.dataset.id);
-      const field = el.dataset.field;
-      const type  = el.dataset.type;
-      const value = el.type==="number" ? (parseFloat(el.value)||0) : el.value;
-      if (type==="bill") {
-        state.bills = state.bills.map(b => b.id===id ? {...b,[field]:value} : b);
+  // Per-person totals
+  const kyleTotal    = pcards.filter(c=>c.owner==='kyle').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
+  const kirstenTotal = pcards.filter(c=>c.owner==='kirsten').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
+
+  let html = `<div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label" style="color:${KYLE}">Kyle's spend</div>
+      <div class="stat-value" style="color:${KYLE}">${fmt(kyleTotal)}</div>
+      <div class="stat-sub">${pcards.filter(c=>c.owner==='kyle').length} cards</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="color:${KIRS}">Kirsten's spend</div>
+      <div class="stat-value" style="color:${KIRS}">${fmt(kirstenTotal)}</div>
+      <div class="stat-sub">${pcards.filter(c=>c.owner==='kirsten').length} cards</div>
+    </div>
+  </div>`;
+
+  html += `<p class="hint">Personal cards are for <strong style="color:var(--text)">budget tracking only</strong> — they don't affect the family split or settlement.</p>`;
+
+  if (pcards.length > 0) {
+    html += `<div class="g-card">`;
+    pcards.forEach((pc, i) => {
+      const ownerColor = pc.owner==='kyle' ? KYLE : KIRS;
+      const amount = parseFloat(pc.amount)||0;
+      if (state.editingPersonalCard===pc.id) {
+        html += `<div class="edit-form"${i===0?' style="border-top:none"':''}>
+          <input class="inp" data-field="name" data-id="${pc.id}" data-type="pcard" value="${esc(pc.name)}" placeholder="Card name"/>
+          <div class="form-row">
+            <div>
+              <div class="field-label">Owner</div>
+              <select class="inp" data-field="owner" data-id="${pc.id}" data-type="pcard">
+                <option value="kyle"${pc.owner==='kyle'?' selected':''}>Kyle</option>
+                <option value="kirsten"${pc.owner==='kirsten'?' selected':''}>Kirsten</option>
+              </select>
+            </div>
+            <div>
+              <div class="field-label">Monthly spend</div>
+              <input class="inp" data-field="amount" data-id="${pc.id}" data-type="pcard" type="number" inputmode="decimal"
+                value="${pc.amount||''}" placeholder="0.00" style="font-family:monospace;color:${ownerColor}"/>
+            </div>
+          </div>
+          <input class="inp" data-field="note" data-id="${pc.id}" data-type="pcard" value="${esc(pc.note||'')}" placeholder="Note (optional)"/>
+          <div class="btn-row">
+            <button class="btn-primary" data-action="done-edit-pcard" data-id="${pc.id}">Done</button>
+            <button class="btn-danger" data-action="delete-pcard" data-id="${pc.id}">Delete</button>
+          </div>
+        </div>`;
       } else {
-        state.cards = state.cards.map(c => c.id===id ? {...c,[field]:value} : c);
+        html += `<div class="personal-card-row" data-action="edit-pcard" data-id="${pc.id}">
+          <div style="width:28px;height:28px;border-radius:50%;background:${pc.owner==='kyle'?'var(--kyle-bg)':'var(--kirs-bg)'};
+            border:1.5px solid ${ownerColor}44;display:flex;align-items:center;justify-content:center;
+            font-size:11px;font-weight:800;color:${ownerColor};flex-shrink:0">K</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">💳 ${esc(pc.name)}</div>
+            ${pc.note?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(pc.note)}</div>`:''}
+          </div>
+          <span class="pill" style="background:${pc.owner==='kyle'?'var(--kyle-bg)':'var(--kirs-bg)'};color:${ownerColor};border:1px solid ${ownerColor}33">
+            ${pc.owner==='kyle'?'Kyle':'Kirsten'}
+          </span>
+          <div style="text-align:right;min-width:72px">
+            <div style="font-size:15px;font-weight:700;font-family:monospace;color:${ownerColor}">${fmt(amount)}</div>
+            <div style="font-size:10px;color:var(--muted)">personal</div>
+          </div>
+          <span class="chevron">›</span>
+        </div>`;
       }
-      // Re-render header total only (avoid losing focus in form)
-      document.getElementById("header-total-value").textContent = fmt(calcSettlement().grandTotal);
     });
-    el.addEventListener("change", () => {
-      const id   = parseInt(el.dataset.id);
-      const field = el.dataset.field;
-      const type  = el.dataset.type;
-      const value = el.type==="number" ? (parseFloat(el.value)||0) : el.value;
-      if (type==="bill") {
-        state.bills = state.bills.map(b => b.id===id ? {...b,[field]:value} : b);
+    html += '</div>';
+  } else {
+    html += `<div style="text-align:center;padding:36px 20px;color:var(--muted)">
+      <div style="font-size:32px;margin-bottom:10px">💳</div>
+      <div style="font-size:14px;font-weight:600;color:var(--sub);margin-bottom:4px">No personal cards yet</div>
+      <div style="font-size:12px">Add your own cards to track personal spending</div>
+    </div>`;
+  }
+
+  if (state.showAddPersonalCard) {
+    html += `<div class="add-form">
+      <div class="add-form-title">New Personal Card</div>
+      <input class="inp" id="npc-name" placeholder="Card name (e.g. Amex Gold)"/>
+      <div class="form-row">
+        <div>
+          <div class="field-label">Owner</div>
+          <select class="inp" id="npc-owner">
+            <option value="kyle">Kyle</option>
+            <option value="kirsten">Kirsten</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label">Monthly spend</div>
+          <input class="inp" id="npc-amount" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace"/>
+        </div>
+      </div>
+      <input class="inp" id="npc-note" placeholder="Note (optional)"/>
+      <div class="btn-row">
+        <button class="btn-primary" data-action="confirm-add-pcard">Add Card</button>
+        <button class="btn-secondary" data-action="cancel-add-pcard">Cancel</button>
+      </div>
+    </div>`;
+  } else {
+    html += `<button class="add-btn" data-action="show-add-pcard" style="margin-top:${pcards.length?'0':'8px'}">+ Add Personal Card</button>`;
+  }
+
+  return html;
+}
+
+
+// ─── Insights Tab ─────────────────────────────────────────────────────────────
+function renderInsights(s) {
+  const curKey  = monthKey();
+  const income  = getIncome(curKey);
+  const spend   = getSpending(curKey);
+  const view    = state.insightsView; // 'combined' | 'kyle' | 'kirsten'
+
+  // ── Income input card ──────────────────────────────────────────────────────
+  let html = `
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px">${MONTHS[state.viewMonth]} Income</div>
+  <div class="income-card">
+    <div class="income-row">
+      <div class="income-avatar avatar-kyle">K</div>
+      <span class="income-label">Kyle</span>
+      <input class="income-inp" id="income-kyle" type="number" inputmode="decimal"
+        placeholder="0.00" value="${income.kyle||''}"/>
+    </div>
+    <div class="income-row">
+      <div class="income-avatar avatar-kirs">K</div>
+      <span class="income-label">Kirsten</span>
+      <input class="income-inp" id="income-kirsten" type="number" inputmode="decimal"
+        placeholder="0.00" value="${income.kirsten||''}"/>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
+      <span style="font-size:12px;color:var(--muted)">Combined income</span>
+      <span style="font-size:16px;font-weight:800;font-family:monospace;color:${GREEN}">${fmt(income.kyle + income.kirsten)}</span>
+    </div>
+  </div>`;
+
+  // ── Surplus / deficit for current month ───────────────────────────────────
+  const kyleSurplus    = income.kyle    - spend.kyle;
+  const kirstenSurplus = income.kirsten - spend.kirsten;
+  const combIncome     = income.kyle + income.kirsten;
+  const combSpend      = spend.total;
+  const combSurplus    = combIncome - combSpend;
+
+  if (combIncome > 0 || combSpend > 0) {
+    const maxVal = Math.max(combIncome, combSpend, income.kyle, spend.kyle, income.kirsten, spend.kirsten, 1);
+    const bar = (val, color, maxV) => {
+      const pct = Math.min(100, Math.round(val/maxV*100));
+      return `<div class="surplus-bar-fill" style="width:${pct}%;background:${color}"></div>`;
+    };
+    html += `
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:16px 0 8px">${MONTHS[state.viewMonth]} Snapshot</div>
+    <div class="income-card">`;
+
+    if (view === 'combined' || view === 'kyle') {
+      html += `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:${KYLE}">Kyle</span>
+          <span style="font-size:11px;color:${kyleSurplus>=0?GREEN:'#f87171'};font-weight:700">
+            ${kyleSurplus>=0?'+':''}${fmt(kyleSurplus)}
+          </span>
+        </div>
+        <div class="surplus-row">
+          <span class="surplus-name" style="color:${GREEN}">Income</span>
+          <div class="surplus-bar-track">${bar(income.kyle, GREEN, maxVal)}</div>
+          <span class="surplus-val" style="color:${GREEN}">${fmt(income.kyle)}</span>
+        </div>
+        <div class="surplus-row">
+          <span class="surplus-name" style="color:${KYLE}">Spending</span>
+          <div class="surplus-bar-track">${bar(spend.kyle, KYLE, maxVal)}</div>
+          <span class="surplus-val" style="color:${KYLE}">${fmt(spend.kyle)}</span>
+        </div>
+      </div>`;
+    }
+    if (view === 'combined') {
+      html += `<div style="height:1px;background:var(--border);margin-bottom:12px"></div>`;
+    }
+    if (view === 'combined' || view === 'kirsten') {
+      html += `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:${KIRS}">Kirsten</span>
+          <span style="font-size:11px;color:${kirstenSurplus>=0?GREEN:'#f87171'};font-weight:700">
+            ${kirstenSurplus>=0?'+':''}${fmt(kirstenSurplus)}
+          </span>
+        </div>
+        <div class="surplus-row">
+          <span class="surplus-name" style="color:${GREEN}">Income</span>
+          <div class="surplus-bar-track">${bar(income.kirsten, GREEN, maxVal)}</div>
+          <span class="surplus-val" style="color:${GREEN}">${fmt(income.kirsten)}</span>
+        </div>
+        <div class="surplus-row">
+          <span class="surplus-name" style="color:${KIRS}">Spending</span>
+          <div class="surplus-bar-track">${bar(spend.kirsten, KIRS, maxVal)}</div>
+          <span class="surplus-val" style="color:${KIRS}">${fmt(spend.kirsten)}</span>
+        </div>
+      </div>`;
+    }
+    if (view === 'combined') {
+      html += `<div style="height:1px;background:var(--border);margin-bottom:12px"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">Household surplus</span>
+        <span style="font-size:18px;font-weight:800;font-family:monospace;color:${combSurplus>=0?GREEN:'#f87171'}">${combSurplus>=0?'+':''}${fmt(combSurplus)}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── Line chart (Income vs Spending over time) ─────────────────────────────
+  html += `
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:16px 0 8px">Income vs Spending</div>
+  <div class="view-toggle">
+    <button class="view-toggle-btn${view==='combined'?' active':''}" data-action="insights-view" data-view="combined">Combined</button>
+    <button class="view-toggle-btn${view==='kyle'?' active':''}" data-action="insights-view" data-view="kyle">Kyle</button>
+    <button class="view-toggle-btn${view==='kirsten'?' active':''}" data-action="insights-view" data-view="kirsten">Kirsten</button>
+  </div>`;
+  html += renderLineChart(view);
+
+  // ── Pie chart ─────────────────────────────────────────────────────────────
+  html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:16px 0 8px">Spending Breakdown</div>`;
+  html += renderPie(s);
+
+  // ── Month history table ────────────────────────────────────────────────────
+  const histEntries = Object.keys(state.monthData)
+    .sort((a,b) => b.localeCompare(a))
+    .slice(0, 12);
+
+  if (histEntries.length > 0) {
+    html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:16px 0 8px">Month History</div>
+    <div class="hist-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:8px 14px;border-bottom:1px solid var(--border)">
+        <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Month</span>
+        <span style="font-size:9px;font-weight:700;color:${GREEN};text-transform:uppercase;letter-spacing:.1em;text-align:right">Income</span>
+        <span style="font-size:9px;font-weight:700;color:var(--kyle);text-transform:uppercase;letter-spacing:.1em;text-align:right">Spend</span>
+        <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:right">Net</span>
+      </div>`;
+
+    histEntries.forEach(key => {
+      const [yr, mo] = key.split('-').map(Number);
+      const mLabel = MONTHS[mo-1].slice(0,3) + ' ' + String(yr).slice(2);
+      const inc = getIncome(key);
+      const sp  = getSpending(key);
+
+      let totalInc, totalSpend;
+      if (view === 'kyle')    { totalInc = inc.kyle;    totalSpend = sp.kyle; }
+      else if (view==='kirsten') { totalInc = inc.kirsten; totalSpend = sp.kirsten; }
+      else                    { totalInc = inc.kyle + inc.kirsten; totalSpend = sp.total; }
+
+      const net = totalInc - totalSpend;
+      const netColor = net >= 0 ? GREEN : '#f87171';
+      const hasData = totalInc > 0 || totalSpend > 0;
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:10px 14px;border-top:1px solid var(--border);${!hasData?'opacity:.4':''}">
+        <span style="font-size:12px;font-weight:600;color:var(--text)">${mLabel}</span>
+        <span style="font-size:12px;font-family:monospace;font-weight:700;color:${GREEN};text-align:right">${totalInc>0?fmt(totalInc):'—'}</span>
+        <span style="font-size:12px;font-family:monospace;font-weight:700;color:var(--sub);text-align:right">${totalSpend>0?fmt(totalSpend):'—'}</span>
+        <span style="font-size:12px;font-family:monospace;font-weight:700;color:${netColor};text-align:right">${totalInc>0||totalSpend>0?(net>=0?'+':'')+fmt(net):'—'}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  return html;
+}
+
+// ─── Line Chart SVG ───────────────────────────────────────────────────────────
+function renderLineChart(view) {
+  const months = getChartMonths(6);
+  const W = 520, H = 160, PAD = { top:16, right:12, bottom:32, left:56 };
+  const innerW = W - PAD.left - PAD.right;
+  const innerH = H - PAD.top  - PAD.bottom;
+
+  // Gather data points
+  const dataPoints = months.map(m => {
+    const inc = getIncome(m.key);
+    const sp  = getSpending(m.key);
+    if (view === 'kyle')    return { incA: inc.kyle,    spA: sp.kyle,    label: m.label };
+    if (view === 'kirsten') return { incA: inc.kirsten, spA: sp.kirsten, label: m.label };
+    return { incA: inc.kyle + inc.kirsten, spA: sp.total, label: m.label };
+  });
+
+  const allVals = dataPoints.flatMap(d => [d.incA, d.spA]).filter(v => v > 0);
+  const maxV = allVals.length ? Math.max(...allVals) * 1.15 : 5000;
+  const minV = 0;
+  const range = maxV - minV || 1;
+
+  const toX = i  => PAD.left + (i / Math.max(dataPoints.length-1, 1)) * innerW;
+  const toY = v  => PAD.top  + innerH - ((v - minV) / range) * innerH;
+
+  const polyline = (pts, color, dash='') => {
+    if (pts.every(p => p[1] === toY(0))) return ''; // all zero - skip
+    const d = pts.map((p,i) => (i===0?'M':'L') + p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
+  };
+  const dots = (pts, color) => pts
+    .filter(p => p[2] > 0)
+    .map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="${color}" stroke="var(--card)" stroke-width="2"/>`)
+    .join('');
+
+  const incPts  = dataPoints.map((d,i) => [toX(i), toY(d.incA), d.incA]);
+  const spPts   = dataPoints.map((d,i) => [toX(i), toY(d.spA),  d.spA]);
+
+  // Y axis ticks
+  const ticks = 4;
+  let yTicks = '';
+  for (let t = 0; t <= ticks; t++) {
+    const v = minV + (range / ticks) * t;
+    const y = toY(v).toFixed(1);
+    const label = v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${Math.round(v)}`;
+    yTicks += `<line x1="${PAD.left-4}" y1="${y}" x2="${W-PAD.right}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    yTicks += `<text x="${PAD.left-8}" y="${y}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="var(--muted)" font-family="-apple-system,sans-serif">${label}</text>`;
+  }
+
+  // X axis labels
+  let xLabels = '';
+  dataPoints.forEach((d,i) => {
+    xLabels += `<text x="${toX(i).toFixed(1)}" y="${(H - PAD.bottom + 14).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="-apple-system,sans-serif">${d.label}</text>`;
+  });
+
+  // Fill area under income line (subtle)
+  const fillPts = [...incPts.map(p=>`${p[0].toFixed(1)},${p[1].toFixed(1)}`),
+    `${toX(dataPoints.length-1).toFixed(1)},${toY(0).toFixed(1)}`,
+    `${toX(0).toFixed(1)},${toY(0).toFixed(1)}`].join(' ');
+  const incomeLine  = view==='kirsten' ? KIRS : KYLE;
+  const spendLine   = view==='kyle' ? '#6366f1' : view==='kirsten' ? '#a855f7' : '#f59e0b';
+
+  const noData = allVals.length === 0;
+
+  // Legend
+  const legendItems = view === 'combined'
+    ? [{color:KYLE, label:'Combined Income', dash:''},{color:'#f59e0b', label:'Combined Spending', dash:'4,3'}]
+    : view === 'kyle'
+    ? [{color:KYLE, label:'Kyle Income', dash:''},{color:'#6366f1', label:'Kyle Spending', dash:'4,3'}]
+    : [{color:KIRS, label:'Kirsten Income', dash:''},{color:'#a855f7', label:'Kirsten Spending', dash:'4,3'}];
+
+  const legendHtml = legendItems.map(l =>
+    `<div class="line-legend-item">
+      <svg width="20" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="${l.color}" stroke-width="2.5" stroke-dasharray="${l.dash}" stroke-linecap="round"/></svg>
+      ${esc(l.label)}
+    </div>`).join('');
+
+  return `<div class="line-chart-wrap">
+    <div class="line-chart-title">Income vs Spending</div>
+    <div class="line-chart-sub">Last 6 months · ${view==='combined'?'Household':view==='kyle'?'Kyle':'Kirsten'}</div>
+    ${noData ? `<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Enter income above to see your chart</div>` : `
+    <svg id="line-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      ${yTicks}
+      ${xLabels}
+      <polygon points="${fillPts}" fill="${incomeLine}11"/>
+      ${polyline(incPts, incomeLine)}
+      ${polyline(spPts, spendLine, '4,3')}
+      ${dots(incPts, incomeLine)}
+      ${dots(spPts, spendLine)}
+    </svg>`}
+    <div class="line-legend">${legendHtml}</div>
+  </div>`;
+}
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+function attachEvents() {
+  const content = document.getElementById('content');
+
+  // Live field edits
+  content.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      const id=parseInt(el.dataset.id), field=el.dataset.field, type=el.dataset.type;
+      const value = el.type==='number'?(parseFloat(el.value)||0):el.value;
+      if (type==='bill') {
+        state.bills = state.bills.map(b=>b.id===id?{...b,[field]:value}:b);
+      } else if (type==='pcard') {
+        const md = getMonthData();
+        md.personalCards = (md.personalCards||[]).map(c=>c.id===id?{...c,[field]:value}:c);
       } else {
-        state.cards = state.cards.map(c => c.id===id ? {...c,[field]:value} : c);
+        const md = getMonthData();
+        md.cards = md.cards.map(c=>c.id===id?{...c,[field]:value}:c);
       }
-      render();
+      document.getElementById('header-total-value').textContent = fmt(calcSettlement().grandTotal);
+    });
+    el.addEventListener('change', () => {
+      const id=parseInt(el.dataset.id), field=el.dataset.field, type=el.dataset.type;
+      const value = el.type==='number'?(parseFloat(el.value)||0):el.value;
+      if (type==='bill') {
+        state.bills = state.bills.map(b=>b.id===id?{...b,[field]:value}:b);
+      } else if (type==='pcard') {
+        const md = getMonthData();
+        md.personalCards = (md.personalCards||[]).map(c=>c.id===id?{...c,[field]:value}:c);
+      } else {
+        const md = getMonthData();
+        md.cards = md.cards.map(c=>c.id===id?{...c,[field]:value}:c);
+      }
+      saveState(); render();
     });
   });
 
   // Water input
-  const waterInput = document.getElementById("water-input");
-  if (waterInput) {
-    waterInput.addEventListener("input", () => {
-      const val = parseFloat(waterInput.value)||0;
-      state.bills = state.bills.map(b => b.name==="Water" ? {...b,amount:val} : b);
-      const avgEl = waterInput.closest(".water-row").querySelector(".water-avg");
-      if (avgEl) avgEl.textContent = `= ${fmt(val/3)}/mo`;
-      document.getElementById("header-total-value").textContent = fmt(calcSettlement().grandTotal);
+  const wi = document.getElementById('water-input');
+  if (wi) {
+    wi.addEventListener('input', () => {
+      const val=parseFloat(wi.value)||0;
+      state.bills = state.bills.map(b=>b.name==='Water'?{...b,amount:val}:b);
+      const avg = document.getElementById('water-avg');
+      if (avg) avg.textContent = `= ${fmt(val/3)}/mo`;
+      document.getElementById('header-total-value').textContent = fmt(calcSettlement().grandTotal);
+      saveState();
     });
   }
 
-  // Action buttons
-  content.querySelectorAll("[data-action]").forEach(el => {
-    el.addEventListener("click", e => {
-      e.stopPropagation();
-      const action = el.dataset.action;
-      const id     = el.dataset.id ? parseInt(el.dataset.id) : null;
-
-      if (action==="edit-bill")         { state.editingBill = id; render(); }
-      else if (action==="done-edit-bill") { state.editingBill = null; render(); }
-      else if (action==="delete-bill")  { state.bills = state.bills.filter(b=>b.id!==id); state.editingBill=null; render(); }
-      else if (action==="edit-card")    { state.editingCard = id; render(); }
-      else if (action==="done-edit-card") { state.editingCard = null; render(); }
-      else if (action==="delete-card")  { state.cards = state.cards.filter(c=>c.id!==id); state.editingCard=null; render(); }
-      else if (action==="show-add-bill")   { state.showAddBill=true; render(); }
-      else if (action==="cancel-add-bill") { state.showAddBill=false; render(); }
-      else if (action==="show-add-card")   { state.showAddCard=true; render(); }
-      else if (action==="cancel-add-card") { state.showAddCard=false; render(); }
-
-      else if (action==="confirm-add-bill") {
-        const name   = document.getElementById("nb-name").value.trim();
-        const amount = parseFloat(document.getElementById("nb-amount").value)||0;
-        const freq   = document.getElementById("nb-freq").value;
-        const paidBy = document.getElementById("nb-payer").value;
-        const cat    = document.getElementById("nb-cat").value;
-        if (!name) return;
-        state.bills.push({id:state.nextBillId++, name, amount, frequency:freq, paidBy, category:cat});
-        state.showAddBill=false; render();
+  // Income inputs — save silently on each keystroke, re-render only on blur
+  ['kyle','kirsten'].forEach(who => {
+    const inp = document.getElementById(`income-${who}`);
+    if (!inp) return;
+    // Save value on every keystroke without re-rendering (preserves focus & cursor)
+    inp.addEventListener('input', () => {
+      setIncome(monthKey(), who, parseFloat(inp.value)||0);
+      saveState();
+    });
+    // Re-render the insights panel only after the user leaves the field
+    inp.addEventListener('blur', () => {
+      if (state.activeTab === 'insights') {
+        const focusedId = inp.id; // remember which field just blurred
+        const s = calcSettlement();
+        document.getElementById('content').innerHTML = renderInsights(s);
+        attachEvents();
+        // Don't try to re-focus — user already left the field intentionally
       }
-      else if (action==="confirm-add-card") {
-        const name    = document.getElementById("nc-name").value.trim();
-        const paidBy  = document.getElementById("nc-payer").value;
-        const kyleAmt = parseFloat(document.getElementById("nc-kyle").value)||0;
-        const kirsAmt = parseFloat(document.getElementById("nc-kirsten").value)||0;
+    });
+  });
+
+  // Action buttons
+  content.querySelectorAll('[data-action]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const action=el.dataset.action, id=el.dataset.id?parseInt(el.dataset.id):null;
+
+      if      (action==='edit-bill')           { state.editingBill=id; render(); }
+      else if (action==='done-edit-bill')      { state.editingBill=null; saveState(); render(); }
+      else if (action==='delete-bill')         { state.bills=state.bills.filter(b=>b.id!==id); state.editingBill=null; saveState(); render(); }
+      else if (action==='edit-card')           { state.editingCard=id; render(); }
+      else if (action==='done-edit-card')      { state.editingCard=null; saveState(); render(); }
+      else if (action==='delete-card')         { const md=getMonthData(); md.cards=md.cards.filter(c=>c.id!==id); state.editingCard=null; saveState(); render(); }
+      else if (action==='show-add-bill')       { state.showAddBill=true; render(); }
+      else if (action==='cancel-add-bill')     { state.showAddBill=false; render(); }
+      else if (action==='show-add-card')       { state.showAddCard=true; render(); }
+      else if (action==='cancel-add-card')     { state.showAddCard=false; render(); }
+      else if (action==='confirm-add-bill') {
+        const name=document.getElementById('nb-name').value.trim();
+        const amount=parseFloat(document.getElementById('nb-amount').value)||0;
+        const freq=document.getElementById('nb-freq').value;
+        const paidBy=document.getElementById('nb-payer').value;
+        const cat=document.getElementById('nb-cat').value;
+        const note=document.getElementById('nb-note').value.trim();
         if (!name) return;
-        state.cards.push({id:state.nextCardId++, name, paidBy, kyleAmount:kyleAmt, kirstenAmount:kirsAmt});
-        state.showAddCard=false; render();
+        state.bills.push({id:state.nextBillId++,name,amount,frequency:freq,paidBy,category:cat,note});
+        state.showAddBill=false; saveState(); render();
+      }
+      else if (action==='edit-pcard')         { state.editingPersonalCard=id; render(); }
+      else if (action==='done-edit-pcard')    { state.editingPersonalCard=null; saveState(); render(); }
+      else if (action==='delete-pcard')       {
+        const md=getMonthData();
+        md.personalCards=(md.personalCards||[]).filter(c=>c.id!==id);
+        state.editingPersonalCard=null; saveState(); render();
+      }
+      else if (action==='show-add-pcard')     { state.showAddPersonalCard=true; render(); }
+      else if (action==='cancel-add-pcard')   { state.showAddPersonalCard=false; render(); }
+      else if (action==='confirm-add-pcard')  {
+        const name   = document.getElementById('npc-name').value.trim();
+        const owner  = document.getElementById('npc-owner').value;
+        const amount = parseFloat(document.getElementById('npc-amount').value)||0;
+        const note   = document.getElementById('npc-note').value.trim();
+        if (!name) return;
+        const md = getMonthData();
+        md.personalCards = md.personalCards || [];
+        md.personalCards.push({id: md.nextPersonalId++, name, owner, amount, note});
+        state.showAddPersonalCard=false; saveState(); render();
+      }
+      else if (action==='insights-view') {
+        state.insightsView = el.dataset.view;
+        saveState();
+        render();
+      }
+      else if (action==='set-split-mode') {
+        // Toggle split mode on an existing card (in edit form)
+        const newMode = el.dataset.mode;
+        const md=getMonthData();
+        md.cards = md.cards.map(c=>c.id===id?{...c,splitMode:newMode}:c);
+        render(); // no save yet — user still in edit form
+      }
+      else if (action==='new-card-mode') {
+        // Toggle split mode in the add-card form without re-rendering everything
+        const newMode = el.dataset.mode;
+        const hiddenInput = document.getElementById('nc-split-mode');
+        if (hiddenInput) hiddenInput.value = newMode;
+        // Update button styles
+        document.querySelectorAll('[data-action="new-card-mode"]').forEach(btn => {
+          const active = btn.dataset.mode === newMode;
+          btn.style.background = active ? 'var(--kyle)' : 'transparent';
+          btn.style.color = active ? '#fff' : 'var(--muted)';
+        });
+        // Swap input area
+        const inputsDiv = document.getElementById('nc-inputs');
+        if (inputsDiv) {
+          if (newMode === 'half') {
+            inputsDiv.innerHTML = `<div>
+              <div class="field-label">Total bill amount</div>
+              <input class="inp" id="nc-total" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
+            </div>`;
+          } else {
+            inputsDiv.innerHTML = `<div class="form-row">
+              <div>
+                <div class="field-label" style="color:${KYLE}">Kyle's charges</div>
+                <input class="inp" id="nc-kyle" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
+              </div>
+              <div>
+                <div class="field-label" style="color:${KIRS}">Kirsten's charges</div>
+                <input class="inp" id="nc-kirsten" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
+              </div>
+            </div>`;
+          }
+        }
+      }
+      else if (action==='confirm-add-card') {
+        const name=document.getElementById('nc-name').value.trim();
+        const paidBy=document.getElementById('nc-payer').value;
+        const splitMode=(document.getElementById('nc-split-mode')||{}).value||'charges';
+        if (!name) return;
+        const md=getMonthData();
+        if (!md.nextCardId) md.nextCardId=101;
+        let newCard = {id:md.nextCardId++, name, paidBy, splitMode};
+        if (splitMode==='half') {
+          newCard.totalAmount = parseFloat(document.getElementById('nc-total')?.value)||0;
+        } else {
+          newCard.kyleAmount    = parseFloat(document.getElementById('nc-kyle')?.value)||0;
+          newCard.kirstenAmount = parseFloat(document.getElementById('nc-kirsten')?.value)||0;
+        }
+        md.cards.push(newCard);
+        state.showAddCard=false; saveState(); render();
       }
     });
   });
 }
 
-// ─── Tab clicks ───────────────────────────────────────────────────────────────
-document.getElementById("tabs").addEventListener("click", e => {
-  const tab = e.target.closest("[data-tab]");
+// ─── Header controls ──────────────────────────────────────────────────────────
+document.getElementById('tabs').addEventListener('click', e => {
+  const tab=e.target.closest('[data-tab]');
   if (!tab) return;
-  state.activeTab = tab.dataset.tab;
-  state.editingBill = null;
-  state.editingCard = null;
-  state.showAddBill = false;
-  state.showAddCard = false;
+  state.activeTab=tab.dataset.tab;
+  state.editingBill=null; state.editingCard=null; state.editingPersonalCard=null;
+  state.showAddBill=false; state.showAddCard=false; state.showAddPersonalCard=false;
+  state.showAddFamilyCard=false;
+  render();
+});
+
+document.getElementById('prev-month').addEventListener('click', () => {
+  state.viewMonth--;
+  if (state.viewMonth<0){state.viewMonth=11;state.viewYear--;}
+  state.editingCard=null; state.showAddCard=false;
+  render();
+});
+document.getElementById('next-month').addEventListener('click', () => {
+  state.viewMonth++;
+  if (state.viewMonth>11){state.viewMonth=0;state.viewYear++;}
+  state.editingCard=null; state.showAddCard=false;
+  render();
+});
+document.getElementById('go-today').addEventListener('click', () => {
+  const now=new Date();
+  state.viewYear=now.getFullYear(); state.viewMonth=now.getMonth();
   render();
 });
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
+loadState();
 render();
 </script>
 </body>
