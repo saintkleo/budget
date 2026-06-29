@@ -313,10 +313,12 @@ input[type=number]::-webkit-inner-spin-button{display:none}
 .pill-kirs{background:var(--kirs-bg);color:var(--kirs);border:1px solid var(--kirs)33;box-shadow:0 0 8px var(--kirs-glow)}
 
 /* ── Category group ── */
-.cat-header{display:flex;align-items:center;gap:7px;margin:16px 0 7px}
+.cat-header{display:flex;align-items:center;gap:7px;margin:16px 0 7px;cursor:pointer;user-select:none}
 .cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px currentColor}
 .cat-name{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
 .cat-total{margin-left:auto;font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace;font-weight:600}
+.cat-chevron{font-size:13px;color:var(--border3);margin-left:6px;flex-shrink:0;transition:transform .2s;display:inline-block;transform:rotate(90deg)}
+.cat-chevron.collapsed{transform:rotate(0deg)}
 
 /* ── Bill row ── */
 .bill-row{display:flex;align-items:center;gap:10px;padding:13px 15px;border-top:1px solid var(--border);cursor:pointer;transition:background .12s}
@@ -372,6 +374,14 @@ input[type=number]::-webkit-inner-spin-button{display:none}
   box-shadow:0 1px 0 #ffffff04 inset;
 }
 .add-btn:active{border-color:var(--kyle);color:var(--kyle);box-shadow:0 0 16px var(--kyle-glow)}
+.add-btn-sm{
+  width:auto;display:inline-flex;align-items:center;
+  background:transparent;border:1px dashed var(--border2);
+  border-radius:8px;padding:6px 12px;color:var(--muted);
+  font-size:11px;cursor:pointer;font-weight:600;margin-top:8px;
+  transition:all .2s;letter-spacing:.02em;
+}
+.add-btn-sm:active{border-color:var(--kyle);color:var(--kyle)}
 .add-form{
   background:linear-gradient(145deg,var(--card2),var(--card));
   border-radius:16px;border:1px solid var(--border2);
@@ -477,7 +487,13 @@ input[type=number]::-webkit-inner-spin-button{display:none}
   overflow:hidden;margin-bottom:12px;
   box-shadow:0 8px 32px #00000044,0 1px 0 #ffffff06 inset;
 }
-.breakdown-hd{padding:12px 16px;border-bottom:1px solid var(--border);background:#00000025;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+.breakdown-hd{padding:12px 16px;border-bottom:1px solid var(--border);background:#00000025;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.bd-label{padding:12px 16px 4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:var(--sub)}
+.bd-summary{display:flex;gap:12px;padding:14px 16px}
+.bd-summary-item{flex:1;text-align:center;background:#ffffff05;border:1px solid var(--border);border-radius:12px;padding:12px 10px}
+.bd-summary-lbl{display:block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}
+.bd-summary-val{display:block;font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace}
+.section-divider.is-toggle{cursor:pointer;user-select:none}
 .sec-hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#ffffff04}
 .sec-hd-lbl{font-size:12px;font-weight:700}
 .sec-hd-val{font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:700}
@@ -980,6 +996,8 @@ const DEFAULT_BILLS = [
 // ─── State ────────────────────────────────────────────────────────────────────
 let state = {
   activeTab: 'family',
+  collapsedCats: {},
+  collapsedSections: {},
   editingBill: null,
   editingCard: null,
   showAddBill: false,
@@ -1008,16 +1026,22 @@ function pInitial(key) {
   return n.charAt(0).toUpperCase();
 }
 
-// Helper: get resolved amounts for any card regardless of mode
+// Helper: get resolved amounts for a shared card.
+// Each person's individual (non-split) charges are subtracted from the total;
+// whatever remains is assumed to be shared and split 50/50.
 function cardDisplayAmounts(card) {
-  const mode = card.splitMode || 'charges';
-  if (mode === 'half') {
-    const total = parseFloat(card.totalAmount)||0;
-    return { ka: total/2, kia: total/2, total, owedByOther: total/2, otherName: pName(card.paidBy==='kyle'?'kirsten':'kyle') };
-  }
-  const ka  = parseFloat(card.kyleAmount)||0;
-  const kia = parseFloat(card.kirstenAmount)||0;
-  return { ka, kia, total: ka+kia, owedByOther: card.paidBy==='kyle'?kia:ka, otherName: pName(card.paidBy==='kyle'?'kirsten':'kyle') };
+  const total         = parseFloat(card.totalAmount)||0;
+  const kyleExcluded   = parseFloat(card.kyleExcluded)||0;
+  const kirstenExcluded = parseFloat(card.kirstenExcluded)||0;
+  const shared = Math.max(0, total - kyleExcluded - kirstenExcluded);
+  const halfShared = shared/2;
+  const ka  = kyleExcluded + halfShared;
+  const kia = kirstenExcluded + halfShared;
+  return {
+    ka, kia, total, kyleExcluded, kirstenExcluded, shared,
+    owedByOther: card.paidBy==='kyle' ? kia : ka,
+    otherName: pName(card.paidBy==='kyle'?'kirsten':'kyle'),
+  };
 }
 
 
@@ -1089,6 +1113,8 @@ function loadState() {
     if (p.insightsView) state.insightsView = p.insightsView;
     if (p.pieMode)        state.pieMode        = p.pieMode;
     if (p.householdName)  state.householdName  = p.householdName;
+    if (p.collapsedCats)  state.collapsedCats  = p.collapsedCats;
+    if (p.collapsedSections) state.collapsedSections = p.collapsedSections;
     if (p.person1)        state.person1        = p.person1;
     if (p.person2)        state.person2        = p.person2;
   } catch(e) {}
@@ -1103,6 +1129,8 @@ function saveState() {
       insightsView:   state.insightsView,
       pieMode:        state.pieMode,
       householdName:  state.householdName,
+      collapsedCats:  state.collapsedCats,
+      collapsedSections: state.collapsedSections,
       person1:        state.person1,
       person2:        state.person2,
     }));
@@ -1158,22 +1186,11 @@ function calcSettlement() {
 
   let cardKyleOwes=0, cardKirstenOwes=0;
   cards.forEach(c => {
-    const mode = c.splitMode || 'charges';
-    if (mode === 'half') {
-      const total = parseFloat(c.totalAmount)||0;
-      const half  = total / 2;
-      if (c.paidBy==='kyle') cardKirstenOwes += half;
-      else                    cardKyleOwes    += half;
-    } else {
-      const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
-      if (c.paidBy==='kyle') cardKirstenOwes+=kia; else cardKyleOwes+=ka;
-    }
+    const { ka, kia } = cardDisplayAmounts(c);
+    if (c.paidBy==='kyle') cardKirstenOwes += kia;
+    else                    cardKyleOwes    += ka;
   });
-  const cardsTotalMonthly = cards.reduce((s,c) => {
-    const mode = c.splitMode || 'charges';
-    if (mode==='half') return s + (parseFloat(c.totalAmount)||0);
-    return s + (parseFloat(c.kyleAmount)||0) + (parseFloat(c.kirstenAmount)||0);
-  }, 0);
+  const cardsTotalMonthly = cards.reduce((s,c) => s + (parseFloat(c.totalAmount)||0), 0);
   const billNet  = kyleOwesBillShare - kirstenOwesBillShare;
   const cardNet  = cardKyleOwes - cardKirstenOwes;
   const netTransfer = billNet + cardNet;
@@ -1379,31 +1396,36 @@ function renderBills(s) {
   Object.entries(groups).forEach(([cat,items]) => {
     if (!items.length) return;
     const catTotal = items.reduce((s,b)=>s+b.monthly,0);
-    html += `<div class="cat-header">
+    const collapsed = !!state.collapsedCats[cat];
+    html += `<div class="cat-header" data-action="toggle-cat" data-cat="${cat}">
       <span class="cat-dot" style="background:${CAT_COLORS[cat]||'#64748b'}"></span>
       <span class="cat-name">${esc(cat)}</span>
       <span class="cat-total">${fmt(catTotal)}/mo</span>
-    </div><div class="g-card">`;
-    items.forEach(bill => {
-      if (state.editingBill===bill.id) {
-        html += renderBillEdit(bill);
-      } else {
-        html += `<div class="bill-row" data-action="edit-bill" data-id="${bill.id}">
-          <div style="flex:1;min-width:0">
-            <div class="bill-name">${esc(bill.name)}</div>
-            ${bill.note ? `<div class="bill-note">${esc(bill.note)}</div>` : bill.frequency!=='monthly' ? `<div class="bill-note">${fmt(bill.monthly)}/mo avg</div>` : ''}
-          </div>
-          ${bill.frequency!=='monthly'?`<span class="bill-freq-badge">${bill.frequency.slice(0,1).toUpperCase()}</span>`:''}
-          ${pill(bill.paidBy)}
-          <div style="text-align:right;min-width:72px">
-            <div class="bill-amount">${fmt(bill.amount)}</div>
-            ${bill.frequency!=='monthly'?`<div style="font-size:10px;color:var(--muted)">/${bill.frequency.slice(0,1)}</div>`:''}
-          </div>
-          <span class="chevron">›</span>
-        </div>`;
-      }
-    });
-    html += '</div>';
+      <span class="cat-chevron${collapsed?' collapsed':''}">›</span>
+    </div>`;
+    if (!collapsed) {
+      html += `<div class="g-card">`;
+      items.forEach(bill => {
+        if (state.editingBill===bill.id) {
+          html += renderBillEdit(bill);
+        } else {
+          html += `<div class="bill-row" data-action="edit-bill" data-id="${bill.id}">
+            <div style="flex:1;min-width:0">
+              <div class="bill-name">${esc(bill.name)}</div>
+              ${bill.note ? `<div class="bill-note">${esc(bill.note)}</div>` : bill.frequency!=='monthly' ? `<div class="bill-note">${fmt(bill.monthly)}/mo avg</div>` : ''}
+            </div>
+            ${bill.frequency!=='monthly'?`<span class="bill-freq-badge">${bill.frequency.slice(0,1).toUpperCase()}</span>`:''}
+            ${pill(bill.paidBy)}
+            <div style="text-align:right;min-width:72px">
+              <div class="bill-amount">${fmt(bill.amount)}</div>
+              ${bill.frequency!=='monthly'?`<div style="font-size:10px;color:var(--muted)">/${bill.frequency.slice(0,1)}</div>`:''}
+            </div>
+            <span class="chevron">›</span>
+          </div>`;
+        }
+      });
+      html += '</div>';
+    }
   });
   if (state.showAddBill) {
     html += `<div class="add-form">
@@ -1433,7 +1455,7 @@ function renderBills(s) {
       </div>
     </div>`;
   } else {
-    html += `<button class="add-btn" data-action="show-add-bill">+ Add Bill</button>`;
+    html += `<button class="add-btn-sm" data-action="show-add-bill">+ Add Bill</button>`;
   }
   return html;
 }
@@ -1465,48 +1487,35 @@ function renderBillEdit(bill) {
 }
 
 // ─── Shared card helpers ──────────────────────────────────────────────────────
-function splitModeToggle(card) {
-  const mode = card.splitMode || 'charges';
-  const opts = [{val:'charges',label:'By charges'},{val:'half',label:'Split 50/50'}];
-  return `<div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:2px">
-    ${opts.map(o=>`<button data-action="set-split-mode" data-id="${card.id}" data-mode="${o.val}"
-      style="flex:1;padding:8px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.02em;transition:all .15s;
-        background:${mode===o.val?'var(--kyle)':'transparent'};color:${mode===o.val?'#fff':'var(--muted)'}">${o.label}</button>`).join('')}
-  </div>`;
-}
-
 function renderCardEditForm(card) {
-  const mode = card.splitMode || 'charges';
-  let inputs = '';
-  if (mode === 'half') {
-    inputs = `<div>
-      <div class="field-label">Total bill amount</div>
-      <input class="inp" data-field="totalAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
-        value="${card.totalAmount||''}" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
-      <div style="font-size:11px;color:var(--muted);margin-top:5px">Each person owes: <strong style="color:var(--green);font-family:monospace">${fmt((parseFloat(card.totalAmount)||0)/2)}</strong></div>
-    </div>`;
-  } else {
-    inputs = `<div class="form-row">
-      <div>
-        <div class="field-label" style="color:${KYLE}">${pName('kyle')}'s charges</div>
-        <input class="inp" data-field="kyleAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
-          value="${card.kyleAmount||''}" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
-      </div>
-      <div>
-        <div class="field-label" style="color:${KIRS}">${pName('kirsten')}'s charges</div>
-        <input class="inp" data-field="kirstenAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
-          value="${card.kirstenAmount||''}" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
-      </div>
-    </div>`;
-  }
+  const total   = parseFloat(card.totalAmount)||0;
+  const kyleEx  = parseFloat(card.kyleExcluded)||0;
+  const kirsEx  = parseFloat(card.kirstenExcluded)||0;
+  const shared  = Math.max(0, total - kyleEx - kirsEx);
   return `<div class="edit-form" style="border-top:none">
     <input class="inp" data-field="name" data-id="${card.id}" data-type="card" value="${esc(card.name)}" placeholder="Card name"/>
-    <div><div class="field-label">Split method</div>${splitModeToggle(card)}</div>
     <select class="inp" data-field="paidBy" data-id="${card.id}" data-type="card">
       <option value="kyle"${card.paidBy==='kyle'?' selected':''}>Kyle pays the bill</option>
       <option value="kirsten"${card.paidBy==='kirsten'?' selected':''}>Kirsten pays the bill</option>
     </select>
-    ${inputs}
+    <div>
+      <div class="field-label">Total for the month</div>
+      <input class="inp" data-field="totalAmount" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+        value="${card.totalAmount||''}" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
+    </div>
+    <div class="form-row">
+      <div>
+        <div class="field-label" style="color:${KYLE}">${pName('kyle')}'s individual (not split)</div>
+        <input class="inp" data-field="kyleExcluded" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+          value="${card.kyleExcluded||''}" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
+      </div>
+      <div>
+        <div class="field-label" style="color:${KIRS}">${pName('kirsten')}'s individual (not split)</div>
+        <input class="inp" data-field="kirstenExcluded" data-id="${card.id}" data-type="card" type="number" inputmode="decimal"
+          value="${card.kirstenExcluded||''}" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted)">Shared (split 50/50): <strong style="color:var(--text);font-family:monospace">${fmt(shared)}</strong> → ${fmt(shared/2)} each</div>
     <div class="btn-row">
       <button class="btn-primary" data-action="done-edit-card" data-id="${card.id}">Done</button>
       <button class="btn-danger" data-action="delete-card" data-id="${card.id}">Delete</button>
@@ -1521,42 +1530,20 @@ function renderSharedCards(s) {
   let html = '';
 
   cards.forEach(card => {
-    const mode = card.splitMode || 'charges';
     const { ka, kia, total, owedByOther, otherName } = cardDisplayAmounts(card);
-    const modeBadge = mode==='half'
-      ? `<span style="font-size:10px;font-weight:700;background:#0a2a1a;color:var(--green);border:1px solid var(--green)33;padding:2px 7px;border-radius:20px">50/50</span>`
-      : `<span style="font-size:10px;font-weight:700;background:var(--kyle-bg);color:var(--kyle);border:1px solid var(--kyle)33;padding:2px 7px;border-radius:20px">By charges</span>`;
 
     html += `<div class="g-card">`;
     if (state.editingCard===card.id) {
       html += renderCardEditForm(card);
     } else {
       html += `<div class="cc-hdr" data-action="edit-card" data-id="${card.id}">
-        <div style="display:flex;align-items:center;gap:8px">💳<span class="cc-name">${esc(card.name)}</span>${modeBadge}</div>
+        <div style="display:flex;align-items:center;gap:8px">💳<span class="cc-name">${esc(card.name)}</span></div>
         <div style="display:flex;align-items:center;gap:8px">${pill(card.paidBy)}<span class="chevron">›</span></div>
       </div>`;
-      if (mode === 'half') {
-        html += `<div style="padding:14px 16px;text-align:center;cursor:pointer" data-action="edit-card" data-id="${card.id}">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total Bill</div>
-          <div style="font-size:28px;font-weight:800;font-family:monospace;color:var(--green)">${fmt(total)}</div>
-          <div style="display:flex;justify-content:center;gap:24px;margin-top:10px">
-            <div style="text-align:center">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${KYLE};margin-bottom:3px">${esc(pName("kyle"))}</div>
-              <div style="font-size:16px;font-weight:700;font-family:monospace;color:${KYLE}">${fmt(ka)}</div>
-            </div>
-            <div style="font-size:18px;color:var(--muted);align-self:center">=</div>
-            <div style="text-align:center">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${KIRS};margin-bottom:3px">${esc(pName("kirsten"))}</div>
-              <div style="font-size:16px;font-weight:700;font-family:monospace;color:${KIRS}">${fmt(kia)}</div>
-            </div>
-          </div>
-        </div>`;
-      } else {
-        html += `<div class="cc-grid" data-action="edit-card" data-id="${card.id}" style="cursor:pointer">
-          <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KYLE}">${esc(pName("kyle"))}</div><div class="cc-cell-val" style="color:${ka>0?KYLE:'var(--border2)'}">${fmt(ka)}</div></div>
-          <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KIRS}">${esc(pName("kirsten"))}</div><div class="cc-cell-val" style="color:${kia>0?KIRS:'var(--border2)'}">${fmt(kia)}</div></div>
-        </div>`;
-      }
+      html += `<div class="cc-grid" data-action="edit-card" data-id="${card.id}" style="cursor:pointer">
+        <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KYLE}">${esc(pName("kyle"))}</div><div class="cc-cell-val" style="color:${ka>0?KYLE:'var(--border2)'}">${fmt(ka)}</div></div>
+        <div class="cc-cell"><div class="cc-cell-lbl" style="color:${KIRS}">${esc(pName("kirsten"))}</div><div class="cc-cell-val" style="color:${kia>0?KIRS:'var(--border2)'}">${fmt(kia)}</div></div>
+      </div>`;
       html += `<div class="cc-footer">
         <span class="cc-total">Total: <span style="font-family:monospace;font-weight:700">${fmt(total)}</span></span>
         ${owedByOther>0?`<span class="cc-owed">${esc(otherName)} owes ${fmt(owedByOther)}</span>`:''}
@@ -1569,32 +1556,24 @@ function renderSharedCards(s) {
     html += `<div class="add-form">
       <div class="add-form-title">New Shared Card</div>
       <input class="inp" id="nc-name" placeholder="Card name (e.g. Chase Sapphire)"/>
-      <div>
-        <div class="field-label">Split method</div>
-        <div style="display:flex;gap:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden">
-          <button id="nc-mode-charges" data-mode="charges" data-action="new-card-mode"
-            style="flex:1;padding:9px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:var(--kyle);color:#fff">By charges</button>
-          <button id="nc-mode-half" data-mode="half" data-action="new-card-mode"
-            style="flex:1;padding:9px 4px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:transparent;color:var(--muted)">Split 50/50</button>
-        </div>
-      </div>
       <select class="inp" id="nc-payer">
         <option value="kyle">${pName('kyle')} pays the bill</option>
         <option value="kirsten">${pName('kirsten')} pays the bill</option>
       </select>
-      <div id="nc-inputs">
-        <div class="form-row">
-          <div>
-            <div class="field-label" style="color:${KYLE}">${pName('kyle')}'s charges</div>
-            <input class="inp" id="nc-kyle" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
-          </div>
-          <div>
-            <div class="field-label" style="color:${KIRS}">${pName('kirsten')}'s charges</div>
-            <input class="inp" id="nc-kirsten" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
-          </div>
+      <div>
+        <div class="field-label">Total for the month</div>
+        <input class="inp" id="nc-total" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
+      </div>
+      <div class="form-row">
+        <div>
+          <div class="field-label" style="color:${KYLE}">${pName('kyle')}'s individual (not split)</div>
+          <input class="inp" id="nc-kyle-excluded" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
+        </div>
+        <div>
+          <div class="field-label" style="color:${KIRS}">${pName('kirsten')}'s individual (not split)</div>
+          <input class="inp" id="nc-kirsten-excluded" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
         </div>
       </div>
-      <input type="hidden" id="nc-split-mode" value="charges"/>
       <div class="btn-row">
         <button class="btn-primary" data-action="confirm-add-card">Add Card</button>
         <button class="btn-secondary" data-action="cancel-add-card">Cancel</button>
@@ -1611,36 +1590,32 @@ function renderFamily(s) {
   const md = getMonthData();
   const cards = md.cards || [];
 
-  // ── Stat bar ──────────────────────────────────────────────────────────────
-  let html = `<div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label" style="color:${KYLE}">${esc(pName("kyle"))} pays</div>
-      <div class="stat-value" style="color:${KYLE}">${fmt(s.kyleBillsTotal)}</div>
-      <div class="stat-sub">${s.kyleBills.length} bills</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label" style="color:${KIRS}">${esc(pName("kirsten"))} pays</div>
-      <div class="stat-value" style="color:${KIRS}">${fmt(s.kirstenBillsTotal)}</div>
-      <div class="stat-sub">${s.kirstenBills.length} bills</div>
-    </div>
-  </div>`;
+  let html = '';
 
   // ── Bills section ─────────────────────────────────────────────────────────
-  html += `<div class="section-divider">
+  const billsCollapsed = !!state.collapsedSections.bills;
+  const billsTotalLabel = state.bills.length ? ` · ${fmt(s.kyleBillsTotal + s.kirstenBillsTotal)}` : '';
+  const showBillsBody = !billsCollapsed || state.showAddBill || state.editingBill!=null;
+  html += `<div class="section-divider is-toggle" data-action="toggle-section" data-section="bills">
     <div class="section-divider-line"></div>
-    <span class="section-divider-label">📋 Recurring Bills</span>
+    <span class="section-divider-label">📋 Recurring Bills${billsTotalLabel}<span class="cat-chevron${!showBillsBody?' collapsed':''}" style="margin-left:6px">›</span></span>
     <div class="section-divider-line"></div>
   </div>`;
-  html += renderBills(s);
+  if (showBillsBody) html += renderBills(s);
 
   // ── Shared Cards section ──────────────────────────────────────────────────
-  html += `<div class="section-divider">
+  const cardsCollapsed = !!state.collapsedSections.sharedCards;
+  const cardsTotalLabel = cards.length ? ` · ${fmt(s.cardsTotalMonthly)}` : '';
+  const showCardsBody = !cardsCollapsed || state.showAddCard || state.editingCard!=null;
+  html += `<div class="section-divider is-toggle" data-action="toggle-section" data-section="sharedCards">
     <div class="section-divider-line"></div>
-    <span class="section-divider-label">💳 Shared Cards · ${MONTHS[state.viewMonth]}</span>
+    <span class="section-divider-label">💳 Shared Cards · ${MONTHS[state.viewMonth]}${cardsTotalLabel}<span class="cat-chevron${!showCardsBody?' collapsed':''}" style="margin-left:6px">›</span></span>
     <div class="section-divider-line"></div>
-  </div>
-  <p class="hint">Tap a card to edit charges or split method.</p>`;
-  html += renderSharedCards(s);
+  </div>`;
+  if (showCardsBody) {
+    html += `<p class="hint">Tap a card to edit charges or split method.</p>`;
+    html += renderSharedCards(s);
+  }
 
   // ── Settlement section ────────────────────────────────────────────────────
   const nt = s.netTransfer;
@@ -1671,37 +1646,40 @@ function renderFamily(s) {
   const brow = (lbl,val,indent,color,note) =>
     `<div class="brow${indent?' indent':''}">
       <div><span class="brow-lbl">${esc(lbl)}</span>${note?`<span class="brow-note">(${esc(note)})</span>`:''}</div>
-      <span class="brow-val${color?' hi':''}" style="${color?`color:${color}`:''}>${esc(val)}</span>
+      <span class="brow-val${color?' hi':''}" style="${color?`color:${color}`:''}">${esc(val)}</span>
     </div>`;
   const secHd = (lbl,val,color) =>
     `<div class="sec-hd"><span class="sec-hd-lbl" style="color:${color}">${esc(lbl)}</span><span class="sec-hd-val" style="color:${color}">${esc(val)}</span></div>`;
 
   let bd = '';
-  bd += secHd('Bills Kyle pays', fmt(s.kyleBillsTotal), KYLE);
+  bd += `<div class="bd-label">Recurring Bills</div>`;
+  bd += secHd(`${pName('kyle')} pays`, fmt(s.kyleBillsTotal), KYLE);
   s.kyleBills.forEach(b => { bd += brow(b.name, fmt(b.monthly)+'/mo', true); });
   bd += brow(`${pName('kirsten')}'s half`, fmt(s.kirstenOwesBillShare), false, '#f87171', `${pName('kirsten')} owes ${pName('kyle')}`);
   bd += '<div class="div-line"></div>';
-  bd += secHd('Bills Kirsten pays', fmt(s.kirstenBillsTotal), KIRS);
+  bd += secHd(`${pName('kirsten')} pays`, fmt(s.kirstenBillsTotal), KIRS);
   s.kirstenBills.forEach(b => { bd += brow(b.name, fmt(b.monthly)+'/mo', true); });
   bd += brow(`${pName('kyle')}'s half`, fmt(s.kyleOwesBillShare), false, GREEN, `${pName('kyle')} owes ${pName('kirsten')}`);
 
-  if (s.cardsTotalMonthly > 0) {
+  if (s.cards.length) {
     bd += '<div class="div-line"></div>';
-    bd += secHd('Shared cards', fmt(s.cardsTotalMonthly), '#c026d3');
-    s.cards.forEach(c => {
-      const mode = c.splitMode || 'charges';
-      let owe, who;
-      if (mode === 'half') {
-        const total = parseFloat(c.totalAmount)||0; owe = total/2; who = c.paidBy==='kyle'?'Kirsten':'Kyle';
+    bd += `<div class="bd-label">Shared Cards</div>`;
+    s.cards.forEach((c, i) => {
+      if (i > 0) bd += '<div class="div-line"></div>';
+      const { total, shared, kyleExcluded, kirstenExcluded, owedByOther, otherName } = cardDisplayAmounts(c);
+      const payerName = pName(c.paidBy);
+      const owerColor = c.paidBy==='kyle' ? '#f87171' : GREEN;
+
+      bd += secHd(c.name, fmt(total), '#c026d3');
+      if (kyleExcluded > 0)    bd += brow(`${pName('kyle')}'s individual`, fmt(kyleExcluded), true);
+      if (kirstenExcluded > 0) bd += brow(`${pName('kirsten')}'s individual`, fmt(kirstenExcluded), true);
+      bd += brow('Shared (split 50/50)', fmt(shared), true);
+      if (owedByOther > 0) {
+        bd += brow(`${otherName} owes ${payerName}`, fmt(owedByOther), false, owerColor);
       } else {
-        const ka=parseFloat(c.kyleAmount)||0, kia=parseFloat(c.kirstenAmount)||0;
-        owe = c.paidBy==='kyle'?kia:ka; who = c.paidBy==='kyle'?'Kirsten':'Kyle';
+        bd += `<div style="padding:6px 16px 10px;font-size:11px;color:var(--muted)">No balance owed on this card</div>`;
       }
-      const modeLabel = mode==='half'?'50/50 split':`${who}'s charges`;
-      if (owe>0) bd += brow(c.name, fmt(owe), true, null, `${who} owes · ${modeLabel}`);
     });
-    if (s.cardKyleOwes>0)    bd += brow(`${pName('kyle')} owes (cards)`,    fmt(s.cardKyleOwes),    false, GREEN);
-    if (s.cardKirstenOwes>0) bd += brow(`${pName('kirsten')} owes (cards)`, fmt(s.cardKirstenOwes), false, '#f87171');
   }
 
   bd += '<div class="div-line"></div>';
@@ -1716,7 +1694,27 @@ function renderFamily(s) {
     </div>
   </div>`;
 
-  html += `<div class="breakdown-card"><div class="breakdown-hd">How It's Calculated</div>${bd}</div>`;
+  const breakdownCollapsed = !!state.collapsedSections.breakdown;
+  const kyleCardTotal    = s.cards.reduce((a,c)=>a+cardDisplayAmounts(c).ka, 0);
+  const kirstenCardTotal = s.cards.reduce((a,c)=>a+cardDisplayAmounts(c).kia, 0);
+  const summaryRow = `<div class="bd-summary">
+    <div class="bd-summary-item">
+      <span class="bd-summary-lbl" style="color:${KYLE}">${esc(pName('kyle'))} pays</span>
+      <span class="bd-summary-val" style="color:${KYLE}">${fmt(s.kyleBillsTotal + kyleCardTotal)}</span>
+    </div>
+    <div class="bd-summary-item">
+      <span class="bd-summary-lbl" style="color:${KIRS}">${esc(pName('kirsten'))} pays</span>
+      <span class="bd-summary-val" style="color:${KIRS}">${fmt(s.kirstenBillsTotal + kirstenCardTotal)}</span>
+    </div>
+  </div>`;
+
+  html += `<div class="breakdown-card">
+    <div class="breakdown-hd" data-action="toggle-section" data-section="breakdown">
+      <span>How It's Calculated</span>
+      <span class="cat-chevron${breakdownCollapsed?' collapsed':''}" style="margin-left:0">›</span>
+    </div>
+    ${breakdownCollapsed ? summaryRow : bd}
+  </div>`;
 
   return html;
 }
@@ -2101,20 +2099,6 @@ function attachEvents() {
       }
       document.getElementById('header-total-value').textContent = fmt(calcSettlement().grandTotal);
     });
-    el.addEventListener('change', () => {
-      const id=parseInt(el.dataset.id), field=el.dataset.field, type=el.dataset.type;
-      const value = el.type==='number'?(parseFloat(el.value)||0):el.value;
-      if (type==='bill') {
-        state.bills = state.bills.map(b=>b.id===id?{...b,[field]:value}:b);
-      } else if (type==='pcard') {
-        const md = getMonthData();
-        md.personalCards = (md.personalCards||[]).map(c=>c.id===id?{...c,[field]:value}:c);
-      } else {
-        const md = getMonthData();
-        md.cards = md.cards.map(c=>c.id===id?{...c,[field]:value}:c);
-      }
-      saveState(); render();
-    });
   });
 
   // Income inputs — save silently on each keystroke, re-render only on blur
@@ -2144,7 +2128,17 @@ function attachEvents() {
       e.stopPropagation();
       const action=el.dataset.action, id=el.dataset.id?parseInt(el.dataset.id):null;
 
-      if      (action==='edit-bill')           { state.editingBill=id; render(); }
+      if      (action==='toggle-cat') {
+        const cat = el.dataset.cat;
+        state.collapsedCats[cat] = !state.collapsedCats[cat];
+        saveState(); render();
+      }
+      else if (action==='toggle-section') {
+        const section = el.dataset.section;
+        state.collapsedSections[section] = !state.collapsedSections[section];
+        saveState(); render();
+      }
+      else if (action==='edit-bill')           { state.editingBill=id; render(); }
       else if (action==='done-edit-bill')      { state.editingBill=null; saveState(); render(); }
       else if (action==='delete-bill')         { state.bills=state.bills.filter(b=>b.id!==id); state.editingBill=null; saveState(); render(); }
       else if (action==='edit-card')           { state.editingCard=id; render(); }
@@ -2195,61 +2189,16 @@ function attachEvents() {
         saveState();
         render();
       }
-      else if (action==='set-split-mode') {
-        // Toggle split mode on an existing card (in edit form)
-        const newMode = el.dataset.mode;
-        const md=getMonthData();
-        md.cards = md.cards.map(c=>c.id===id?{...c,splitMode:newMode}:c);
-        render(); // no save yet — user still in edit form
-      }
-      else if (action==='new-card-mode') {
-        // Toggle split mode in the add-card form without re-rendering everything
-        const newMode = el.dataset.mode;
-        const hiddenInput = document.getElementById('nc-split-mode');
-        if (hiddenInput) hiddenInput.value = newMode;
-        // Update button styles
-        document.querySelectorAll('[data-action="new-card-mode"]').forEach(btn => {
-          const active = btn.dataset.mode === newMode;
-          btn.style.background = active ? 'var(--kyle)' : 'transparent';
-          btn.style.color = active ? '#fff' : 'var(--muted)';
-        });
-        // Swap input area
-        const inputsDiv = document.getElementById('nc-inputs');
-        if (inputsDiv) {
-          if (newMode === 'half') {
-            inputsDiv.innerHTML = `<div>
-              <div class="field-label">Total bill amount</div>
-              <input class="inp" id="nc-total" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:var(--green)"/>
-            </div>`;
-          } else {
-            inputsDiv.innerHTML = `<div class="form-row">
-              <div>
-                <div class="field-label" style="color:${KYLE}">${pName('kyle')}'s charges</div>
-                <input class="inp" id="nc-kyle" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KYLE}"/>
-              </div>
-              <div>
-                <div class="field-label" style="color:${KIRS}">${pName('kirsten')}'s charges</div>
-                <input class="inp" id="nc-kirsten" type="number" inputmode="decimal" placeholder="0.00" style="font-family:monospace;color:${KIRS}"/>
-              </div>
-            </div>`;
-          }
-        }
-      }
       else if (action==='confirm-add-card') {
         const name=document.getElementById('nc-name').value.trim();
         const paidBy=document.getElementById('nc-payer').value;
-        const splitMode=(document.getElementById('nc-split-mode')||{}).value||'charges';
+        const totalAmount     = parseFloat(document.getElementById('nc-total')?.value)||0;
+        const kyleExcluded    = parseFloat(document.getElementById('nc-kyle-excluded')?.value)||0;
+        const kirstenExcluded = parseFloat(document.getElementById('nc-kirsten-excluded')?.value)||0;
         if (!name) return;
         const md=getMonthData();
         if (!md.nextCardId) md.nextCardId=101;
-        let newCard = {id:md.nextCardId++, name, paidBy, splitMode};
-        if (splitMode==='half') {
-          newCard.totalAmount = parseFloat(document.getElementById('nc-total')?.value)||0;
-        } else {
-          newCard.kyleAmount    = parseFloat(document.getElementById('nc-kyle')?.value)||0;
-          newCard.kirstenAmount = parseFloat(document.getElementById('nc-kirsten')?.value)||0;
-        }
-        md.cards.push(newCard);
+        md.cards.push({id:md.nextCardId++, name, paidBy, totalAmount, kyleExcluded, kirstenExcluded});
         state.showAddCard=false; saveState(); render();
       }
     });
