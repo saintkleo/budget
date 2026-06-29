@@ -1003,6 +1003,7 @@ const DEFAULT_BILLS = [
 // ─── State ────────────────────────────────────────────────────────────────────
 let state = {
   activeTab: 'family',
+  privacyMode: false,
   collapsedCats: {},
   collapsedSections: {},
   editingBill: null,
@@ -1122,6 +1123,7 @@ function loadState() {
     if (p.householdName)  state.householdName  = p.householdName;
     if (p.collapsedCats)  state.collapsedCats  = p.collapsedCats;
     if (p.collapsedSections) state.collapsedSections = p.collapsedSections;
+    if (p.privacyMode!==undefined) state.privacyMode = p.privacyMode;
     if (p.person1)        state.person1        = p.person1;
     if (p.person2)        state.person2        = p.person2;
   } catch(e) {}
@@ -1138,6 +1140,7 @@ function saveState() {
       householdName:  state.householdName,
       collapsedCats:  state.collapsedCats,
       collapsedSections: state.collapsedSections,
+      privacyMode:    state.privacyMode,
       person1:        state.person1,
       person2:        state.person2,
     }));
@@ -1169,7 +1172,7 @@ function getMonthData() {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2}).format(n||0);
+const fmt = n => state.privacyMode ? '$*****' : new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2}).format(n||0);
 const toMonthly = (a,f) => f==='quarterly' ? a/3 : f==='annual' ? a/12 : Number(a)||0;
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -2036,7 +2039,7 @@ function renderLineChart(view) {
   for (let t = 0; t <= ticks; t++) {
     const v = minV + (range / ticks) * t;
     const y = toY(v).toFixed(1);
-    const label = v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${Math.round(v)}`;
+    const label = state.privacyMode ? '$•••' : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${Math.round(v)}`;
     yTicks += `<line x1="${PAD.left-4}" y1="${y}" x2="${W-PAD.right}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
     yTicks += `<text x="${PAD.left-8}" y="${y}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="var(--muted)" font-family="-apple-system,sans-serif">${label}</text>`;
   }
@@ -2240,6 +2243,19 @@ document.getElementById('go-today').addEventListener('click', () => {
   state.viewYear=now.getFullYear(); state.viewMonth=now.getMonth();
   render();
 });
+
+// ─── Privacy mode: tap the monthly total to hide/show all amounts ──────────────
+(function(){
+  const total = document.getElementById('header-total-value');
+  if (!total) return;
+  total.style.cursor = 'pointer';
+  total.title = 'Tap to hide / show amounts';
+  total.addEventListener('click', () => {
+    state.privacyMode = !state.privacyMode;
+    saveState();
+    render();
+  });
+})();
 
 
 // ─── Desktop grid helpers ─────────────────────────────────────────────────────
